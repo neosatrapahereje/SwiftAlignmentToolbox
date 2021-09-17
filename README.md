@@ -1,2 +1,2 @@
 # SwiftAlignmentToolbox
-A toolbox for music alignment in swift
+A toolbox for music alignment in Swift
