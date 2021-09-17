@@ -13,7 +13,7 @@ let ORIGIN = 0
 let END_OF_SIGNAL: Int? = nil
 let NUM_FRAMES: Int? = nil
 
-func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int, origin: Int = 0, pad: Float = 0.0) -> Array<Float> {
+func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int, origin: Int = 0, pad: Float = 0.0) -> ArraySlice<Float> {
     
     // Length of the signal
     let numSamples: Int = signal.count
@@ -26,8 +26,9 @@ func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int,
     var stop: Int = start + frameSize
     
     if start >= 0 && stop <= numSamples {
-        return Array(signal[start..<stop])
+        return signal[start..<stop]
     } else {
+        // Would this be the right way to do this?
         var left: Int = 0
         var right: Int = 0
         var frame: Array<Float> = Array(repeating: pad, count: frameSize)
@@ -47,43 +48,67 @@ func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int,
         for i in Array(0..<(frameSize - right - left)) {
             frame[left + i] = signal[signalLeft + i]
         }
-        return frame
+        return ArraySlice(frame)
     }
 }
 
-/*
+func normalize(signal: Array<Float>) -> Array<Float> {
+    
+    let scaling: Float = signal.map{abs($0)}.max()!
+    let normalizedSignal: Array<Float> = signal.map{$0 / scaling}
+    return normalizedSignal
+}
+
 struct Signal: Codable {
     let data: Array<Float>
     let count: Int
     let sampleRate: Int
-    let numChannels: Int
-    let start: Float
-    let stop: Float?
+    // For the moment assume that the signal is downmixed to mono
+    // let numChannels: Int
+    // let start: Float?
+    // let stop: Float?
     let norm: Bool
     let gain: Float
     
     init(
         data: Array<Float>,
         sampleRate: Int,
-        numChannels: Int,
-        start: Float = 0.0,
-        stop: Float? = nil,
-        norm: Bool = true,
-        gain: Float = 1
+        // numChannels: Int,
+        // start: Float? = nil,
+        // stop: Float? = nil,
+        norm: Bool = false,
+        gain: Float = 0.0
     ) {
-        self.data = data
-        self.sampleRate = sampleRate
-        self.numChannels = numChannels
         
+
+        self.sampleRate = sampleRate
+        // self.numChannels = numChannels
+        // self.start = start
+        // self.stop = stop
+        self.norm = norm
+        self.gain = gain
+        
+        if self.norm {
+            self.data = normalize(signal: data)
+        } else {
+            self.data = data
+        }
+        self.count = self.data.count
     }
-    
+    // TODO: What other subscript cases are there?
+    subscript(index: Int) -> Float {
+        return self.data[index]
+    }
+    subscript(range: Range<Int>) -> ArraySlice<Float> {
+        return self.data[range]
+    }
 }
 struct framedSignal<Float: Codable>: Codable {
     let signal: Array<Float>
     let frameSize: Int
     let hopSize: Int
-    let origin: Int?
-    let end: Int?
+    // let origin: Int?
+    // let end: Int?
 
     init(signal: Array<Float>,
          frameSize: Int = FRAME_SIZE,
@@ -95,4 +120,3 @@ struct framedSignal<Float: Codable>: Codable {
     }
     
 }
-*/

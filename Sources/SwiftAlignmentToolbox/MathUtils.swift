@@ -28,6 +28,14 @@ struct Matrix<T: Codable>: Codable {
         self.columns = array[0].count
         grid = array.flatMap{$0} as [T]
     }
+    init(array: [T]){
+        // Consider a 1 dimensional array as a Matrix
+        // This is just a convenience initialization, and it does not intend to be
+        // mathematically correct.
+        self.rows = array.count
+        self.columns = 1
+        grid = array as [T]
+    }
     
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -122,6 +130,20 @@ struct Matrix<T: Codable>: Codable {
     }
 }
 
+/*
+func transpose<T>(input: [[T]]) -> [[T]] {
+    if input.isEmpty { return [[T]]() }
+    let count = input[0].count
+    var out = [[T]](count: count, repeatedValue: [T]())
+    for outer in input {
+        for (index, inner) in outer.enumerate() {
+            out[index].append(inner)
+        }
+    }
+
+    return out
+}
+ */
 
 /* Local Distances */
 func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
