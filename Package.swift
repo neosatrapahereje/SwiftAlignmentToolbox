@@ -5,6 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftAlignmentToolbox",
+    platforms: [
+        // It seems that vDSP is only available starting from macOS 10.15
+        .macOS(.v10_15)
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
