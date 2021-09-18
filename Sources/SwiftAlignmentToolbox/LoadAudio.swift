@@ -9,6 +9,7 @@ import Foundation
 import AVFoundation
 
 public func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
+    // TODO: re-sample audio file
     do {
         let url = URL(fileURLWithPath: path)
         let file = try AVAudioFile(forReading: url)
@@ -37,7 +38,6 @@ public func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
                     )
                 )
             }
-            
             let signal: Matrix<Float> = Matrix(array: channelData)
             return signal
 

@@ -13,22 +13,22 @@ public struct Matrix<T: Codable>: Codable {
     let rows: Int, columns: Int
     var grid: [T]
     
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case rows
         case columns
         case grid
     }
-    init(rows: Int, columns: Int, defaultValue: T) {
+    public init(rows: Int, columns: Int, defaultValue: T) {
         self.rows = rows
         self.columns = columns
         grid = Array(repeating: defaultValue, count: rows * columns) as [T]
     }
-    init(array: [[T]]){
+    public init(array: [[T]]){
         self.rows = array.count
         self.columns = array[0].count
         grid = array.flatMap{$0} as [T]
     }
-    init(array: [T]){
+    public init(array: [T]){
         // Consider a 1 dimensional array as a Matrix
         // This is just a convenience initialization, and it does not intend to be
         // mathematically correct.
@@ -49,7 +49,7 @@ public struct Matrix<T: Codable>: Codable {
          */
     }
     
-    func encode(from encoder: Encoder) throws {
+    public func encode(from encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.rows, forKey: .rows)
         try container.encode(self.columns, forKey: .columns)
@@ -58,10 +58,10 @@ public struct Matrix<T: Codable>: Codable {
         try container.encode(rData, forKey: .grid)
         
     }
-    func indexIsValid(row: Int, column: Int) -> Bool {
+    public func indexIsValid(row: Int, column: Int) -> Bool {
         return row >= 0 && row < rows && column >= 0 && column < columns
     }
-    subscript(_ row: Int, _ column: Int) -> T {
+    public subscript(_ row: Int, _ column: Int) -> T {
         get {
             assert(indexIsValid(row: row, column: column), "Index out of range")
             return grid[(row * columns) + column]
@@ -71,7 +71,7 @@ public struct Matrix<T: Codable>: Codable {
             grid[(row * columns) + column] = newValue
         }
     }
-    subscript(_ row: Range<Int>, _ column: Int) -> Matrix<T> {
+    public subscript(_ row: Range<Int>, _ column: Int) -> Matrix<T> {
         get {
             // There must be a way to do this correctly
             var newarray = Array(repeating: [grid[0]], count: row.count) as [[T]]
@@ -87,7 +87,7 @@ public struct Matrix<T: Codable>: Codable {
             }
         }
     }
-    subscript(_ row: Int, _ column: Range<Int>) -> Matrix<T> {
+    public subscript(_ row: Int, _ column: Range<Int>) -> Matrix<T> {
         // Think of broadcasting rules?
         get {
             // There must be a way to do this correctly with pointers instead o
@@ -105,7 +105,7 @@ public struct Matrix<T: Codable>: Codable {
             }
         }
     }
-    subscript(_ row: Range<Int>, _ column: Range<Int>) -> Matrix<T> {
+    public subscript(_ row: Range<Int>, _ column: Range<Int>) -> Matrix<T> {
         // Think of broadcasting rules?
         get {
             // There must be a way to do this correctly with pointers instead o
@@ -144,6 +144,20 @@ func transpose<T>(input: [[T]]) -> [[T]] {
     return out
 }
  */
+
+private func transpose<T>(input: [[T]]) -> [[T]] {
+    // Transpose a 2D array
+    if input.isEmpty { return [[T]]() }
+    let count = input[0].count
+    var out = [[T]](repeating: [T](), count: count)
+    for outer in input {
+        for (index, inner) in outer.enumerated() {
+            out[index].append(inner)
+        }
+    }
+    return out
+}
+
 
 /* Local Distances */
 public func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
