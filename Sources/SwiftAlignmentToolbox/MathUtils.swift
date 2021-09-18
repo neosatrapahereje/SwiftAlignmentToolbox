@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 
-struct Matrix<T: Codable>: Codable {
+public struct Matrix<T: Codable>: Codable {
     let rows: Int, columns: Int
     var grid: [T]
     
@@ -37,7 +37,7 @@ struct Matrix<T: Codable>: Codable {
         grid = array as [T]
     }
     
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.rows = try values.decode(Int.self, forKey: .rows)
         self.columns = try values.decode(Int.self, forKey: .columns)
@@ -146,7 +146,7 @@ func transpose<T>(input: [[T]]) -> [[T]] {
  */
 
 /* Local Distances */
-func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
+public func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
     // L1 (Manhattan) Distance between two vectors
     var dist: Float = 0
     for (i, val) in x.enumerated(){
@@ -155,7 +155,7 @@ func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
     return dist
 }
 
-func CosineDistance(_ x: [Float], _ y: [Float]) -> Float {
+public func CosineDistance(_ x: [Float], _ y: [Float]) -> Float {
     // Cosine Distance between two vectors
     var dist: Float = 0
     var dot: Float = 0
@@ -173,7 +173,7 @@ func CosineDistance(_ x: [Float], _ y: [Float]) -> Float {
     return dist
 }
 
-func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
+public func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
     // Euclidean Distance
     var dist: Float = 0
     dist = sqrt(vDSP.distanceSquared(x, y))
@@ -181,7 +181,7 @@ func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
 }
 
 /* Utilities */
-func vNorm(_ x: [Float]) -> Float {
+public func vNorm(_ x: [Float]) -> Float {
     // Norm of a vector
     // Probably this method exists somewhere else...
     var norm : Float = 0

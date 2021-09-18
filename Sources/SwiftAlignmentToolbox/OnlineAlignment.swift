@@ -10,7 +10,7 @@ import Foundation
 import Accelerate
 
 
-class OnlineTimeWarping{
+public class OnlineTimeWarping{
     // Online Time Warping is the on-line version of
     // Dynamic Time Warping
     let referenceFeatures: [[Float]]

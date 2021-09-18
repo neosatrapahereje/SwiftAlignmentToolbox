@@ -8,7 +8,7 @@
 import Foundation
 import AVFoundation
 
-func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
+public func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
     do {
         let url = URL(fileURLWithPath: path)
         let file = try AVAudioFile(forReading: url)
@@ -21,13 +21,7 @@ func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
             try file.read(into: buf)
             let frameLength = Int(buf.frameLength)
             // let nChannels = buf.floatChannelData.count
-            /*
-            var signal : Matrix<Float> = Matrix(
-                rows: frameLength,
-                columns: nChannels,
-                defaultValue: 0.0
-            )
-             */
+
             // guard let floatChannelData = buf.floatChannelData else { print(2) }
             let floatChannelData = buf.floatChannelData
             
@@ -46,15 +40,7 @@ func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float>? {
             
             let signal: Matrix<Float> = Matrix(array: channelData)
             return signal
-            /*
-            // let samples = Array(UnsafeBufferPointer(start:floatChannelData![0], count:frameLength))
-    //        let samples2 = Array(UnsafeBufferPointer(start:floatChannelData[1], count:frameLength))
-            print("Sample rate \(file.fileFormat.sampleRate)")
-            print("samples")
-            print(samples.count)
-            print(samples.prefix(10))
-    //        print(samples2.prefix(10))
- */
+
         }
     } catch {
         print("Audio Error: \(error)")

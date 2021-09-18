@@ -13,7 +13,7 @@ let ORIGIN = 0
 let END_OF_SIGNAL: Int? = nil
 let NUM_FRAMES: Int? = nil
 
-func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int, origin: Int = 0, pad: Float = 0.0) -> ArraySlice<Float> {
+public func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int, origin: Int = 0, pad: Float = 0.0) -> ArraySlice<Float> {
     
     // Length of the signal
     let numSamples: Int = signal.count
@@ -52,14 +52,14 @@ func signalFrame(signal: Array<Float>, index: Int, frameSize: Int, hopSize: Int,
     }
 }
 
-func normalize(signal: Array<Float>) -> Array<Float> {
+public func normalize(signal: Array<Float>) -> Array<Float> {
     
     let scaling: Float = signal.map{abs($0)}.max()!
     let normalizedSignal: Array<Float> = signal.map{$0 / scaling}
     return normalizedSignal
 }
 
-struct Signal: Codable {
+public struct Signal: Codable {
     let data: Array<Float>
     let count: Int
     let sampleRate: Int
@@ -103,7 +103,8 @@ struct Signal: Codable {
         return self.data[range]
     }
 }
-struct framedSignal<Float: Codable>: Codable {
+
+public struct framedSignal<Float: Codable>: Codable {
     let signal: Array<Float>
     let frameSize: Int
     let hopSize: Int
