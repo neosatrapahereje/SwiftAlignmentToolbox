@@ -11,12 +11,22 @@ import Accelerate
 
 public enum LoadAudioError: Error {
     case RemixError
+    case SampleRateError
+    case ResampleError
 }
 
-public func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float> {
+public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -> Matrix<Float> {
     let url = URL(fileURLWithPath: path)
 
     let audio =  try! AVAudioFile(forReading : url)
+    
+    var doResample: Bool = false
+        
+    if sampleRate != nil {
+        if Float(audio.fileFormat.sampleRate) != sampleRate! {
+            doResample = true
+        }
+    }
 
     let format = AVAudioFormat(commonFormat:.pcmFormatFloat32, sampleRate:audio.fileFormat.sampleRate, channels: audio.fileFormat.channelCount,  interleaved: false)
     let audioBuffer = AVAudioPCMBuffer(pcmFormat: format!, frameCapacity: AVAudioFrameCount(audio.length))!
@@ -26,22 +36,36 @@ public func loadAudioFile(path: String, numChannels: Int?) -> Matrix<Float> {
     var samples: [[Float]] = []
     
     for channel in 0..<audio.fileFormat.channelCount {
-        samples.append(
-            Array(
-                UnsafeBufferPointer(
-                    start: audioBuffer.floatChannelData![Int(channel)], count:arraySize
-                )
+        
+        let channelData: Array<Float> = Array(
+            UnsafeBufferPointer(
+                start: audioBuffer.floatChannelData![Int(channel)], count:arraySize
             )
         )
+        
+        if doResample {
+            
+            let resampledChannelData: Array<Float> = try! resample(
+                signal: channelData,
+                sampleRateOrig: Float(audio.fileFormat.sampleRate),
+                sampleRateNew: sampleRate!
+            )
+            samples.append(resampledChannelData)
+        } else {
+            samples.append(channelData)
+        }
+        
     }
     
+    // Rows are samples, channels are columns
     let signal = Matrix<Float>(array: transpose(samples))
     
     if numChannels != nil {
         let remixedSignal = try! remix(signal: signal, numChannels: numChannels!)
         return remixedSignal
+    } else {
+        return signal
     }
-    return signal
 }
 
 public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Float> {
@@ -71,4 +95,32 @@ public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Floa
         }
     }
     return remixedSignal
+}
+
+public func resample(
+    signal: Array<Float>,
+    sampleRateOrig: Float,
+    sampleRateNew: Float,
+    filter: String = "kaiser_best"
+) throws -> Array<Float> {
+
+    guard sampleRateOrig > 0 else {
+        throw LoadAudioError.SampleRateError
+    }
+    
+    guard sampleRateNew > 0 else {
+        throw LoadAudioError.SampleRateError
+    }
+    
+    let sampleRatio: Float = sampleRateNew / sampleRateOrig
+    
+    let newCount: Int = Int(Float(signal.count) * sampleRatio)
+    
+    guard newCount > 1 else {
+        throw LoadAudioError.ResampleError
+    }
+    
+    let resampledSignal: Array<Float> = Array(repeating: Float(0), count: newCount)
+    
+    return resampledSignal
 }
