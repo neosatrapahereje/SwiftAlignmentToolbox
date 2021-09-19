@@ -135,5 +135,3 @@ public class OnlineTimeWarping{
         return dist
     }
 }
-
-

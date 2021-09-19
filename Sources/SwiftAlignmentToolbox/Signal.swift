@@ -208,15 +208,3 @@ public func signalFrame(
     }
 }
 
-public func normalize(signal: Array<Float>) -> Array<Float> {
-    // Normalize signal
-    let scaling: Float = signal.map{abs($0)}.max()!
-    let normalizedSignal: Array<Float> = signal.map{$0 / scaling}
-    return normalizedSignal
-}
-
-public func rescale(signal: Array<Float>) -> Array<Float>{
-    // Rescale the signal to  range [-1, 1]
-    let normalizedSignal: Array<Float> = signal.map{$0 / Float.greatestFiniteMagnitude}
-    return normalizedSignal
-}

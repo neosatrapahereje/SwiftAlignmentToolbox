@@ -97,11 +97,15 @@ public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Floa
     return remixedSignal
 }
 
+/** **Port of resampy**
+ # TODO
+ * Add options for filters (or use the precomputed filters in the Python package)?
+ */
 public func resample(
     signal: Array<Float>,
     sampleRateOrig: Float,
-    sampleRateNew: Float,
-    filter: String = "kaiser_best"
+    sampleRateNew: Float
+    // filter: String = "kaiser_best" // TODO: Add filters
 ) throws -> Array<Float> {
 
     guard sampleRateOrig > 0 else {
@@ -120,7 +124,62 @@ public func resample(
         throw LoadAudioError.ResampleError
     }
     
-    let resampledSignal: Array<Float> = Array(repeating: Float(0), count: newCount)
+    var resampledSignal: Array<Float> = Array(repeating: Float(0), count: newCount)
     
+    let (interpWindow, precision) = sincWindow(
+        numZeros: 64,
+        precision: 9,
+        rollOff: 0.945,
+        window: nil)
+
+    var interpDelta : Array<Float> = Array(repeating: Float(0), count: interpWindow.count)
+    
+    for i in 1..<interpWindow.count {
+        interpDelta[i - 1] = interpWindow[i] - interpWindow[i - 1]
+    }
+    resampleArray(
+        x: signal,
+        y: &resampledSignal,
+        sampleRatio: sampleRatio,
+        interpWindow: interpWindow,
+        interpDelta: interpDelta,
+        numTable: precision
+    )
     return resampledSignal
+}
+
+public func sincWindow(
+    numZeros: Int = 64,
+    precision: Int = 9,
+    rollOff: Float = 0.945,
+    window: ((Int) -> Array<Float>)? = nil
+) -> (Array<Float>, Int){
+
+    
+    let numBits: Int = Int(Darwin.pow(Double(2), Double(9)))
+    
+    let n: Int = numBits * numZeros
+    
+    var interpWindow: Array<Float> = Array(repeating: Float(0), count: n + 1)
+    
+    let sincWindow: Array<Float> = sinc(
+        linSpace(
+            start:Float(0),
+            stop:Float(numZeros),
+            num: n + 1,
+            endpoint: true
+        ).map { $0 * rollOff}
+    ).map { $0 * rollOff}
+    
+    var taper: Array<Float> = Array(repeating: Float(0), count: 2 * n + 1)
+    if window != nil {
+        taper = window!(2 * n + 1)
+        // let taper: Array<Float> = Array(windw[n:])
+    } else {
+        vDSP_blkman_window(&taper, vDSP_Length(2 * n + 1), 0)
+    }
+    
+    vDSP_vmul(sincWindow, 1, Array(taper[n..<2 * n + 1]), 1, &interpWindow, 1, vDSP_Length(n + 1))
+    
+    return (interpWindow, numBits)
 }
