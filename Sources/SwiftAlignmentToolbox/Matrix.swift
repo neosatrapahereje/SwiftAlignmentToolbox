@@ -8,6 +8,16 @@
 import Foundation
 
 public struct Matrix<T: Codable>: Codable {
+    
+    /*
+    public static func == (lhs: Matrix<T>, rhs: Matrix<T>) -> Bool {
+        let rowcrit: Bool = lhs.rows == rhs.rows
+        let colcrit: Bool = lhs.columns == rhs.columns
+        let gridcrit: Bool = lhs.grid == rhs.grid
+        return rowcrit && colcrit && gridcrit
+    }
+     */
+    
     let rows: Int, columns: Int
     var grid: [T]
     
@@ -157,3 +167,20 @@ public struct Matrix<T: Codable>: Codable {
         return outArray
     }
 }
+
+/*
+public extension Matrix {
+    func write(to: URL) {
+        
+        if let encodedData = try? JSONEncoder().encode(self) {
+            do {
+                try encodedData.write(to: to)
+            }
+        }
+        catch do {
+            print("Failed to write JSON data: \(error.localizedDescription)")
+        }
+        
+    }
+}
+*/
