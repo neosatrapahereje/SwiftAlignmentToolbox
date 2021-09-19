@@ -126,11 +126,15 @@ public func resample(
     
     var resampledSignal: Array<Float> = Array(repeating: Float(0), count: newCount)
     
-    let (interpWindow, precision) = sincWindow(
+    var (interpWindow, precision) = sincWindow(
         numZeros: 64,
         precision: 9,
         rollOff: 0.945,
         window: nil)
+    
+    if sampleRatio < 1 {
+        interpWindow = interpWindow.map { $0 * sampleRatio}
+    }
 
     var interpDelta : Array<Float> = Array(repeating: Float(0), count: interpWindow.count)
     

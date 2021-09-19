@@ -270,11 +270,14 @@
                 sampleRateNew: srNew
             )
             
-            for (swift, python) in zip(resampledSignal, resampledSignalPython).enumerated() {
-                print(swift, python)
+            let absError = zip(resampledSignal, resampledSignalPython).map {abs($0 - $1)}
+            let tol: Float = 1e-2
+            for err in absError {
+                print(err)
+                XCTAssertTrue(err < tol)
             }
-            
         }
+            
         func testSincWindow() {
             let tol: Float = 1e-6
             let windowPython: Array<Float> = [0.945     , 0.9449947 , 0.9449788 , 0.9449523 , 0.94491519,
