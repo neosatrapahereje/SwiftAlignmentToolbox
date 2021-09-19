@@ -8,11 +8,11 @@
 import Foundation
 import Accelerate
 
-public func fft_online(
-    realInput: Array<Float>,
-    imaginaryInput: Array<Float>,
-    realOutput: inout Array<Float>,
-    imaginaryOutput: inout Array<Float>,
+func computeFFT(
+    inputReal: Array<Float>,
+    inputImaginary: Array<Float>,
+    outputReal: inout Array<Float>,
+    outputImaginary: inout Array<Float>,
     frameSize: Int
 ) {
     // Compute FFT
@@ -22,13 +22,13 @@ public func fft_online(
         transformType: .complexComplex,
         ofType: Float.self)!
     fwdDFT.transform(
-        inputReal: realInput,
-        inputImaginary: imaginaryInput,
-        outputReal: &realOutput,
-        outputImaginary: &imaginaryOutput)
+        inputReal: inputReal,
+        inputImaginary: inputImaginary,
+        outputReal: &outputReal,
+        outputImaginary: &outputImaginary)
 }
 
-public func spectrogram_online(
+func computeMagnitudeSpectrogram(
     fftOutputReal: inout Array<Float>,
     fftOutputImaginary: inout Array<Float>,
     spectrogram: inout Array<Float>,
@@ -37,25 +37,36 @@ public func spectrogram_online(
     // Compute Magnitude Spectrogram
     fftOutputReal.withUnsafeMutableBufferPointer {realBP in
                 fftOutputImaginary.withUnsafeMutableBufferPointer {imaginaryBP in
-                    var splitComplex = DSPSplitComplex(realp: realBP.baseAddress!, imagp: imaginaryBP.baseAddress!)
+                    var splitComplex = DSPSplitComplex(
+                        realp: realBP.baseAddress!,
+                        imagp: imaginaryBP.baseAddress!
+                    )
                     vDSP_zvabs(&splitComplex, 1, &spectrogram, 1, vDSP_Length(frameSize))
                 }
             }
 }
 
-public class Spectrogram {
+public class SpectrogramProcessor {
     
-    let frameSize: Int
+    let frameSize: Int // TODO: Ensure that this is a power of two
     var outputReal: Array<Float>
     var outputImaginary: Array<Float>
     let inputImaginary: Array<Float> // We assume that the signals are all real
     var spectrogram: Array<Float>
+    let numFFTBins: Int
     
     public init(
-        frameSize: Int
+        frameSize: Int,
+        includeNyquist: Bool = false
     ) {
         // TODO: Add checks so that frameSize is a power of 2
         self.frameSize = frameSize
+        
+        if includeNyquist {
+            self.numFFTBins = (self.frameSize >> 1) + 1
+        } else {
+            self.numFFTBins = (self.frameSize >> 1)
+        }
         self.outputReal = Array(repeating: Float(0), count: self.frameSize)
         self.outputImaginary = Array(repeating: Float(0), count: self.frameSize)
         self.inputImaginary = Array(repeating: Float(0), count: self.frameSize)
@@ -65,17 +76,15 @@ public class Spectrogram {
     public func process(frames: FramedSignal) -> Matrix<Float>{
         var spectrogram = Matrix(
             rows: frames.numFrames,
-            columns: self.frameSize,
+            columns: self.numFFTBins,
             defaultValue: Float(0)
         )
-        
         for i in 0..<frames.numFrames {
-            self.computeSpectrum(frame: frames[i])
-            for (j, val) in self.spectrogram.enumerated() {
-                spectrogram[i, j] = val
+            self.computeSpectrogram(frame: frames[i])
+            for j in 0..<self.numFFTBins {
+                spectrogram[i, j] = self.spectrogram[j]
             }
         }
-        
         return spectrogram
     }
     
@@ -95,16 +104,30 @@ public class Spectrogram {
         return spectrogram
     }
     
-    public func computeSpectrum(frame: Array<Float>) {
+    public func process(frame: Array<Float>) -> Array<Float> {
+        self.computeSpectrogram(frame: frame)
+        let spectrogram: Array<Float> = Array(self.spectrogram[0..<self.numFFTBins])
+        return spectrogram
+    }
+    
+    public func process(frame: Array<Float>, spectrogram: inout Array<Float>) {
+        // Check that spectrogam has the same number of elements?
+        // For speed reasons, probably not...
+        self.computeSpectrogram(frame: frame)
+        for i in 0..<self.numFFTBins {
+            spectrogram[i] = self.spectrogram[i]
+        }
+    }
+    public func computeSpectrogram(frame: Array<Float>) {
         // TODO: Add window and number of bins
-        fft_online(
-            realInput: frame,
-            imaginaryInput: self.inputImaginary,
-            realOutput: &self.outputReal,
-            imaginaryOutput: &self.outputImaginary,
+        computeFFT(
+            inputReal: frame,
+            inputImaginary: self.inputImaginary,
+            outputReal: &self.outputReal,
+            outputImaginary: &self.outputImaginary,
             frameSize: self.frameSize
         )
-        spectrogram_online(
+        computeMagnitudeSpectrogram(
             fftOutputReal: &self.outputReal,
             fftOutputImaginary: &self.outputImaginary,
             spectrogram: &self.spectrogram,

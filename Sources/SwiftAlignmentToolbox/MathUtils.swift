@@ -99,9 +99,27 @@ public struct Matrix<T: Codable>: Codable {
             let outMatrix = Matrix(array:newarray)
             return outMatrix
         }
-        set {
+        set (newValue) {
             for (i, col) in column.enumerated() {
                 grid[(row * columns) + col] = newValue[0, i]
+            }
+        }
+    }
+    public subscript(_ row: Int, _ column: Range<Int>) -> Array<T> {
+        // Think of broadcasting rules?
+        get {
+            // There must be a way to do this correctly with pointers instead o
+            // creating a new array
+            var newarray = Array(repeating: grid[0], count: column.count) as [T]
+            for (i, col) in column.enumerated() {
+                newarray[i] = grid[(row * columns) + col]
+            }
+            // let outMatrix = Matrix(array:newarray)
+            return newarray
+        }
+        set (newValue) {
+            for (i, col) in column.enumerated() {
+                grid[(row * columns) + col] = newValue[i]
             }
         }
     }
@@ -128,6 +146,18 @@ public struct Matrix<T: Codable>: Codable {
             }
         }
     }
+    public func toArray() -> [[T]] {
+        // There must be a better way to do this
+        var outArray: [[T]] = []
+        for i in 0..<self.rows {
+            var row: Array<T> = []
+            for j in 0..<self.columns {
+                row.append(self[i, j])
+            }
+            outArray.append(row)
+        }
+        return outArray
+    }
 }
 
 /*
@@ -145,7 +175,7 @@ func transpose<T>(input: [[T]]) -> [[T]] {
 }
  */
 
-private func transpose<T>(input: [[T]]) -> [[T]] {
+public func transpose<T>(_ input: [[T]]) -> [[T]] {
     // Transpose a 2D array
     if input.isEmpty { return [[T]]() }
     let count = input[0].count
