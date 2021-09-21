@@ -48,6 +48,8 @@
             let encoder = JSONEncoder()
             if let encoded = try? encoder.encode(matrix){
                 print("encoded!")
+                print(encoded)
+                
                 let decoder = JSONDecoder()
                 if let decoded = try? decoder.decode(Matrix<Float>.self, from: encoded) {
                     print("decoded grid \(decoded.grid[2])")
@@ -55,6 +57,34 @@
                 } else {
                     print("Failed decoding")
                     XCTAssertEqual(true, false)
+                }
+            }
+        }
+        
+        func testMatrixSaving() {
+            let array : [[Float]] = [[1.1, 3.7] , [2.5, 6.4], [7.8, 8.3]]
+            let matrix: Matrix<Float> = Matrix(array: array)
+            
+            let path: String = "/tmp/swift_testMatrixSaving.swz"
+            
+            matrix.saveToFile(path: path)
+            
+            let reloadedMatrix: Matrix<Float> = readMatrixFromFile(path: path)
+            print(reloadedMatrix.grid)
+            
+            XCTAssertEqual(reloadedMatrix.rows, matrix.rows)
+            XCTAssertEqual(reloadedMatrix.columns, matrix.columns)
+            XCTAssertEqual(reloadedMatrix.grid, matrix.grid)
+            
+            // Remove temp file
+            let fileManager = FileManager.default
+        
+            if fileManager.fileExists(atPath: path) {
+                
+                do {
+                    try fileManager.removeItem(atPath: path)
+                } catch let error as NSError {
+                    print("An error took place: \(error)")
                 }
             }
         }
@@ -197,12 +227,10 @@
                                            -0.24800455,  0.80682479,  0.63854348, -1.45518737, -0.34262863,
                                            -0.60116594, -0.45922278, -0.25039278,  0.05933658, -1.06086305,
                                            -0.15171991]
-            // var Ir = Array(repeating: Float(0.0), count: frameSize) // real part of input to FFT
             let inputImaginary = Array(repeating: Float(0.0), count: frameSize) // imaginary part of input to FFT
             var outputReal = Array(repeating: Float(0.0), count: frameSize) // real part of FFT output
             var outputImaginary = Array(repeating: Float(0.0), count: frameSize) // imaginary part of FFT output
-            // var magnitudeSpectrogram = Array(repeating: Float(0.0), count: frameSize)
-            
+
             // The output from the python functions
             let outputRealPython: Array<Float> = [-1.2900565,   1.0226327,  -1.47192727,  1.29307269, -0.34451821,  2.03282584,
                                        -5.33341527, -3.43958358, -5.87532464, -3.43958358, -5.33341527,  2.03282584,
@@ -293,5 +321,34 @@
                 XCTAssertTrue(err < tol)
             }
         }
-        
     }
+
+    final class OsUtilsTest : XCTestCase {
+        func testSaveCompressedData() {
+            let array : [[Float]] = [[1.1, 3.7] , [2.5, 6.4], [7.8, 8.3]]
+            let matrix: Matrix<Float> = Matrix(array: array)
+
+            print(matrix)
+
+            let path: String = "/tmp/test_compression.swz"
+            if let encodedData = try? JSONEncoder().encode(matrix) {
+                writeToFile(data: encodedData,
+                            fileName: path,
+                            compress: true)
+                let fileurl = URL(fileURLWithPath: path)
+                // check that the file was saved
+                XCTAssertTrue(FileManager.default.fileExists(atPath: fileurl.path))
+            }
+            
+            let readData = readFromFile(fileName: path)!
+            let decoder = JSONDecoder()
+            if let decoded = try? decoder.decode(Matrix<Float>.self, from: readData) {
+                print("decoded grid \(decoded.grid[2])")
+                XCTAssertEqual(matrix.grid,  decoded.grid)
+            } else {
+                print("Failed decoding")
+                XCTAssertEqual(true, false)
+            }
+        }
+    }
+

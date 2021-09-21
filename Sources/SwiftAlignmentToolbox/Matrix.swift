@@ -50,11 +50,6 @@ public struct Matrix<T: Codable>: Codable {
         self.rows = try values.decode(Int.self, forKey: .rows)
         self.columns = try values.decode(Int.self, forKey: .columns)
         self.grid = try values.decode(Array<T>.self, forKey: .grid)
-        /*
-        var grid = Array<T>(repeating: 0 as! T, count: bdata.count/MemoryLayout<T>.stride)
-        _ = grid.withUnsafeMutableBytes { bdata.copyBytes(to: $0) }
-        self.grid = grid
-         */
     }
     
     public func encode(from encoder: Encoder) throws {
@@ -168,19 +163,26 @@ public struct Matrix<T: Codable>: Codable {
     }
 }
 
-/*
-public extension Matrix {
-    func write(to: URL) {
-        
+public func readMatrixFromFile<T>(path: String) -> Matrix<T> {
+    // let bdata = NSData(contentsOfFile: path)
+    let bdata = readFromFile(fileName: path)
+    let decoder = JSONDecoder()
+    let decoded = try? decoder.decode(Matrix<T>.self, from: bdata!)
+    return decoded!
+}
+
+extension Matrix {
+
+    public func saveToFile(path: String, compress: Bool = true) {
+        let pathAsURL = URL(fileURLWithPath: path)
+        self.saveToFile(url: pathAsURL)
+    }
+    
+    public func saveToFile(url: URL, compress: Bool = true) {
         if let encodedData = try? JSONEncoder().encode(self) {
-            do {
-                try encodedData.write(to: to)
-            }
+            writeToFile(data: encodedData,
+                        url: url,
+                        compress: compress)
         }
-        catch do {
-            print("Failed to write JSON data: \(error.localizedDescription)")
-        }
-        
     }
 }
-*/
