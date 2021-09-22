@@ -73,6 +73,23 @@ public class SpectrogramProcessor {
         self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
     }
     
+    public init(
+        framedSignal: FramedSignal,
+        includeNyquist: Bool = false
+    ) {
+        self.frameSize = framedSignal.frameSize
+        
+        if includeNyquist {
+            self.numFFTBins = (self.frameSize >> 1) + 1
+        } else {
+            self.numFFTBins = (self.frameSize >> 1)
+        }
+        self.outputReal = Array(repeating: Float(0), count: self.frameSize)
+        self.outputImaginary = Array(repeating: Float(0), count: self.frameSize)
+        self.inputImaginary = Array(repeating: Float(0), count: self.frameSize)
+        self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
+    }
+    
     public func process(frames: FramedSignal) -> Matrix<Float>{
         var spectrogram = Matrix(
             rows: frames.numFrames,
@@ -136,4 +153,19 @@ public class SpectrogramProcessor {
     }
 }
 
-
+public struct Spectrogram {
+    public let frameSize: Int // TODO: Ensure that this is a power of two
+    public var spectrogram: Matrix<Float>
+    public let numFFTBins: Int
+    public let frames: FramedSignal
+    let processor: SpectrogramProcessor
+    
+    public init(framedSignal: FramedSignal, includeNyquist: Bool = false) {
+        self.frames = framedSignal
+        self.processor = SpectrogramProcessor(framedSignal: self.frames,
+                                              includeNyquist: includeNyquist)
+        self.frameSize = self.frames.frameSize
+        self.numFFTBins = self.processor.numFFTBins
+        self.spectrogram = self.processor.process(frames: self.frames)
+    }
+}

@@ -15,6 +15,84 @@ public enum LoadAudioError: Error {
     case ResampleError
 }
 
+public func loadAudioFileNew(path: String, numChannels: Int?, sampleRate: Float?) -> Matrix<Float> {
+    
+    let url = URL(fileURLWithPath: path)
+
+    let audio =  try! AVAudioFile(forReading : url)
+    
+    let sr: Double
+    
+    var doResample: Bool = false
+        
+    if sampleRate != nil {
+        if Float(audio.fileFormat.sampleRate) != sampleRate! {
+            doResample = true
+        }
+    }
+    
+    let frameCapacity: AVAudioFrameCount
+    if sampleRate == nil || doResample {
+        sr = audio.fileFormat.sampleRate
+        frameCapacity = AVAudioFrameCount(audio.length)
+    } else {
+        sr = Double(sampleRate!)
+        
+        let sampleRatio: Float = sampleRate! / Float(audio.fileFormat.sampleRate)
+        
+        frameCapacity = AVAudioFrameCount(Int(Float(audio.length) * sampleRatio))
+    }
+    
+    let nCh: AVAudioChannelCount
+    
+    if numChannels == nil {
+        nCh = audio.fileFormat.channelCount
+    } else {
+        nCh = AVAudioChannelCount(numChannels!)
+    }
+    let format = AVAudioFormat(commonFormat:.pcmFormatFloat32,
+                               sampleRate: sr,
+                               channels: nCh,
+                               interleaved: false)
+    
+    let audioBuffer = AVAudioPCMBuffer(pcmFormat: format!, frameCapacity: frameCapacity)!
+    try! audio.read(into : audioBuffer, frameCount:UInt32(frameCapacity))
+    let arraySize = Int(audioBuffer.frameLength)
+
+    var samples: [[Float]] = []
+    let signal: Matrix<Float>
+    for channel in 0..<audio.fileFormat.channelCount {
+        
+        let channelData: Array<Float> = Array(
+            UnsafeBufferPointer(
+                start: audioBuffer.floatChannelData![Int(channel)], count:arraySize
+            )
+        )
+        
+        if doResample {
+            
+            let resampledChannelData: Array<Float> = try! resample(
+                signal: channelData,
+                sampleRateOrig: Float(audio.fileFormat.sampleRate),
+                sampleRateNew: sampleRate!
+            )
+            samples.append(resampledChannelData)
+        } else {
+            samples.append(channelData)
+        }
+        
+    }
+    
+    // Rows are samples, channels are columns
+    if samples.count == 1 {
+        signal = Matrix<Float>(array: samples[0])
+    } else {
+        signal = Matrix<Float>(array: transpose(samples))
+    }
+    
+    return signal
+}
+
 public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -> Matrix<Float> {
     let url = URL(fileURLWithPath: path)
 
@@ -44,7 +122,7 @@ public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -
         )
         
         if doResample {
-            
+            print("resampling \(Int(channel))")
             let resampledChannelData: Array<Float> = try! resample(
                 signal: channelData,
                 sampleRateOrig: Float(audio.fileFormat.sampleRate),
@@ -56,11 +134,12 @@ public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -
         }
         
     }
-    
+    print("finished reading audio data")
     // Rows are samples, channels are columns
     let signal = Matrix<Float>(array: transpose(samples))
     
     if numChannels != nil {
+        print("remixing")
         let remixedSignal = try! remix(signal: signal, numChannels: numChannels!)
         return remixedSignal
     } else {
@@ -91,7 +170,7 @@ public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Floa
         }
     } else if cond2 {
         for row in 0..<signal.rows {
-            vDSP_meanv(signal[row, 0..<signal.columns], 1, &remixedSignal[row, 0], vDSP_Length(signal.columns))
+            vDSP_meanv(signal[row, 0..<signal.columns].grid, 1, &remixedSignal[row, 0], vDSP_Length(signal.columns))
         }
     }
     return remixedSignal

@@ -19,7 +19,7 @@ public let GAIN: Float = 0.0
 public let NORM: Bool = false
 
 
-public struct Signal: Codable {
+public struct Signal {
     public let data: Array<Float>
     public let count: Int
     public let sampleRate: Int
@@ -30,7 +30,7 @@ public struct Signal: Codable {
     public let norm: Bool
     public let gain: Float
     
-    init(
+    public init(
         data: Array<Float>,
         sampleRate: Int,
         // numChannels: Int,
@@ -50,6 +50,26 @@ public struct Signal: Codable {
             self.data = normalize(signal: data)
         } else {
             self.data = data
+        }
+        self.count = self.data.count
+    }
+    
+    public init(
+        data: Matrix<Float>,
+        sampleRate: Int,
+        // numChannels: Int,
+        // start: Float? = nil,
+        // stop: Float? = nil,
+        norm: Bool = NORM,
+        gain: Float = GAIN
+    ){
+        self.sampleRate = sampleRate
+        self.norm = norm
+        self.gain = gain
+        if self.norm {
+            self.data = normalize(signal: data.grid)
+        } else {
+            self.data = data.grid
         }
         self.count = self.data.count
     }

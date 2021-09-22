@@ -18,8 +18,8 @@ public struct Matrix<T: Codable>: Codable {
     }
      */
     
-    let rows: Int, columns: Int
-    var grid: [T]
+    public let rows: Int, columns: Int
+    public var grid: [T]
     
     public enum CodingKeys: String, CodingKey {
         case rows
@@ -108,6 +108,7 @@ public struct Matrix<T: Codable>: Codable {
             }
         }
     }
+    /*
     public subscript(_ row: Int, _ column: Range<Int>) -> Array<T> {
         // Think of broadcasting rules?
         get {
@@ -126,6 +127,7 @@ public struct Matrix<T: Codable>: Codable {
             }
         }
     }
+     */
     public subscript(_ row: Range<Int>, _ column: Range<Int>) -> Matrix<T> {
         // Think of broadcasting rules?
         get {

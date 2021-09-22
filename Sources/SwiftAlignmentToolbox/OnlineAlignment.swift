@@ -23,7 +23,7 @@ public class OnlineTimeWarping{
     var warpingPath: [[Int]]
     let localDistance : ([Float], [Float]) -> Float
     
-    init(_ referenceFeatures: [[Float]],
+    public init(_ referenceFeatures: [[Float]],
          _ stepSize: Int = 5,
          _ windowSize: Int = 100,
          _ localDistance: String = "L1"){
@@ -55,7 +55,7 @@ public class OnlineTimeWarping{
         }
     }
     
-    func step(inputFeatures: [Float]){
+    public func step(inputFeatures: [Float]){
         // Get current window
         let (lower, upper, window) = self.selectWindow(currentPosition: self.currentPosition)
         
