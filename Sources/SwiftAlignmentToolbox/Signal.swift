@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Surge
 
 // Default values
 public let SAMPLE_RATE: Int? = nil
@@ -24,7 +25,7 @@ public struct Signal {
     public let count: Int
     public let sampleRate: Int
     // For the moment assume that the signal is downmixed to mono
-    // let numChannels: Int
+    // let numChannels: Int?
     // let start: Float?
     // let stop: Float?
     public let norm: Bool
@@ -46,6 +47,8 @@ public struct Signal {
         self.norm = norm
         self.gain = gain
         
+        // self.data = Matrix(rows:data.count, columns: 1, grid: data)
+        
         if self.norm {
             self.data = normalize(signal: data)
         } else {
@@ -66,10 +69,14 @@ public struct Signal {
         self.sampleRate = sampleRate
         self.norm = norm
         self.gain = gain
+        // self.numChannels = data.columns
+        
+        let remixedData = Surge.mean(data, axies: .row)
         if self.norm {
-            self.data = normalize(signal: data.grid)
+            
+            self.data = normalize(signal: remixedData).grid
         } else {
-            self.data = data.grid
+            self.data = remixedData.grid
         }
         self.count = self.data.count
     }
@@ -221,6 +228,8 @@ public func signalFrame(
         
         let signalLeft : Int = min(start, numSamples)
         // let signalRight: Int = max(stop, 0)
+        
+        // frame.replaceSubrange(subrange:left..<(frameSize - right), with: signal[signalLeft..<signalRight])
         for i in 0..<(frameSize - right - left) {
             frame[left + i] = signal[signalLeft + i]
         }

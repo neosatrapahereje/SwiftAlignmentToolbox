@@ -8,7 +8,9 @@
 import Foundation
 import Accelerate
 import Darwin
+import Surge
 
+/*
 /** Array--related utils */
 public func transpose<T>(_ input: [[T]]) -> [[T]] {
     // Transpose a 2D array
@@ -22,11 +24,18 @@ public func transpose<T>(_ input: [[T]]) -> [[T]] {
     }
     return out
 }
+*/
 
 public func normalize(signal: Array<Float>) -> Array<Float> {
     // Normalize signal
     let scaling: Float = signal.map{abs($0)}.max()!
     let normalizedSignal: Array<Float> = signal.map{$0 / scaling}
+    return normalizedSignal
+}
+
+public func normalize(signal: Matrix<Float>) -> Matrix<Float> {
+    let scaling: Float = 1 / (Surge.max(Surge.abs(signal)) + 1e-10)
+    let normalizedSignal: Matrix<Float> = scaling * signal
     return normalizedSignal
 }
 

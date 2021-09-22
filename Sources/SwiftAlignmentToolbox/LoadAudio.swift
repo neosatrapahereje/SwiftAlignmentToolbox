@@ -8,6 +8,8 @@
 import Foundation
 import AVFoundation
 import Accelerate
+import Surge
+
 
 public enum LoadAudioError: Error {
     case RemixError
@@ -82,12 +84,11 @@ public func loadAudioFileNew(path: String, numChannels: Int?, sampleRate: Float?
         }
         
     }
-    
     // Rows are samples, channels are columns
     if samples.count == 1 {
-        signal = Matrix<Float>(array: samples[0])
+        signal = Matrix<Float>(samples)
     } else {
-        signal = Matrix<Float>(array: transpose(samples))
+        signal = Matrix<Float>(samples)
     }
     
     return signal
@@ -136,7 +137,7 @@ public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -
     }
     print("finished reading audio data")
     // Rows are samples, channels are columns
-    let signal = Matrix<Float>(array: transpose(samples))
+    let signal = Matrix<Float>(samples)
     
     if numChannels != nil {
         print("remixing")
@@ -151,7 +152,7 @@ public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Floa
     var remixedSignal: Matrix<Float> = Matrix(
         rows: signal.rows,
         columns: numChannels,
-        defaultValue: Float(0)
+        repeatedValue: Float(0)
     )
     
     let cond1: Bool = signal.columns == 1 && numChannels >= 1
@@ -170,7 +171,7 @@ public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Floa
         }
     } else if cond2 {
         for row in 0..<signal.rows {
-            vDSP_meanv(signal[row, 0..<signal.columns].grid, 1, &remixedSignal[row, 0], vDSP_Length(signal.columns))
+            vDSP_meanv(signal[row: row], 1, &remixedSignal[row, 0], vDSP_Length(signal.columns))
         }
     }
     return remixedSignal
@@ -230,6 +231,17 @@ public func resample(
     )
     return resampledSignal
 }
+
+public func resampledSignalLength(sampleRateNew: Float, sampleRateOrig: Float, lengthOrig: Int) -> Int{
+    
+    // Return the length of a resampled signal
+    let sampleRatio: Float = sampleRateNew / sampleRateOrig
+    
+    let newCount: Int = Int(Float(lengthOrig) * sampleRatio)
+    
+    return newCount
+}
+
 
 public func sincWindow(
     numZeros: Int = 64,

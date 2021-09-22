@@ -7,6 +7,7 @@
 
 import Foundation
 import Accelerate
+import Surge
 
 func computeFFT(
     inputReal: Array<Float>,
@@ -94,7 +95,7 @@ public class SpectrogramProcessor {
         var spectrogram = Matrix(
             rows: frames.numFrames,
             columns: self.numFFTBins,
-            defaultValue: Float(0)
+            repeatedValue: Float(0)
         )
         for i in 0..<frames.numFrames {
             self.computeSpectrogram(frame: frames[i])
