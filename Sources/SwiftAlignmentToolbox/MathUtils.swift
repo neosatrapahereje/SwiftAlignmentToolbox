@@ -28,14 +28,21 @@ public func transpose<T>(_ input: [[T]]) -> [[T]] {
 
 public func normalize(signal: Array<Float>) -> Array<Float> {
     // Normalize signal
-    let scaling: Float = signal.map{abs($0)}.max()!
-    let normalizedSignal: Array<Float> = signal.map{$0 / scaling}
+    // let scaling: Float = signal.map{abs($0)}.max()!
+    let scaling: Float = Float(1) / (Surge.max(Surge.abs(signal)) + 1e-10)
+    let normalizedSignal: Array<Float> = Surge.mul(signal, scaling)
     return normalizedSignal
 }
 
 public func normalize(signal: Matrix<Float>) -> Matrix<Float> {
-    let scaling: Float = 1 / (Surge.max(Surge.abs(signal)) + 1e-10)
-    let normalizedSignal: Matrix<Float> = scaling * signal
+    let scaling: Float = Float(1) / (Surge.max(Surge.abs(signal)) + 1e-10)
+    let normalizedSignal: Matrix<Float> = Surge.mul(scaling, signal)// scaling * signal
+    return normalizedSignal
+}
+
+public func normalize(signal: Vector<Float>) -> Vector<Float> {
+    let scaling: Float = Float(1) / (Surge.max(Surge.abs(signal.scalars)) + 1e-10)
+    let normalizedSignal: Vector<Float> = Surge.mul(signal, scaling)
     return normalizedSignal
 }
 

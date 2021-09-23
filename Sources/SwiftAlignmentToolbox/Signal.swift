@@ -21,13 +21,11 @@ public let NORM: Bool = false
 
 
 public struct Signal {
-    public let data: Array<Float>
+    public let data: Matrix<Float>
     public let count: Int
     public let sampleRate: Int
     // For the moment assume that the signal is downmixed to mono
     // let numChannels: Int?
-    // let start: Float?
-    // let stop: Float?
     public let norm: Bool
     public let gain: Float
     
@@ -35,24 +33,20 @@ public struct Signal {
         data: Array<Float>,
         sampleRate: Int,
         // numChannels: Int,
-        // start: Float? = nil,
-        // stop: Float? = nil,
         norm: Bool = NORM,
         gain: Float = GAIN
     ) {
         self.sampleRate = sampleRate
         // self.numChannels = numChannels
-        // self.start = start
-        // self.stop = stop
         self.norm = norm
         self.gain = gain
         
-        // self.data = Matrix(rows:data.count, columns: 1, grid: data)
+        let mData = Matrix<Float>(rows:data.count, columns: 1, grid: data)
         
         if self.norm {
-            self.data = normalize(signal: data)
+            self.data = normalize(signal: mData)
         } else {
-            self.data = data
+            self.data = mData
         }
         self.count = self.data.count
     }
@@ -71,21 +65,23 @@ public struct Signal {
         self.gain = gain
         // self.numChannels = data.columns
         
-        let remixedData = Surge.mean(data, axies: .row)
+        
         if self.norm {
-            
-            self.data = normalize(signal: remixedData).grid
+            let remixedData = Surge.mean(data, axies: .row)
+            self.data = normalize(signal: remixedData)
         } else {
-            self.data = remixedData.grid
+            self.data = data
         }
         self.count = self.data.count
     }
     // TODO: What other subscript cases are there?
     subscript(index: Int) -> Float {
-        return self.data[index]
+        // Handle the case of multi-channel signals
+        return self.data.grid[index]
     }
     subscript(range: Range<Int>) -> ArraySlice<Float> {
-        return self.data[range]
+        // Handle the case of multi-channel signals
+        return self.data.grid[range]
     }
 }
 
@@ -98,6 +94,7 @@ public struct FramedSignal {
     public let frameRate: Float
     public let count: Int // for convenience
     let origin: Int
+    public var frame: Array<Float> // For convenience, to not have to create an array every time
 
     public init(
         signal: Signal,
@@ -122,7 +119,8 @@ public struct FramedSignal {
         default:
             self.origin = -(frameSize / 2)
         }
-
+        
+        self.frame = Array<Float>(repeating: Float(0), count: self.frameSize)
     }
 
     public init(
@@ -156,11 +154,11 @@ public struct FramedSignal {
         default:
             self.origin = (frameSize - 1) / 2
         }
-
+        self.frame = Array<Float>(repeating: Float(0), count: self.frameSize)
     }
     
     public subscript(index: Int) -> Array<Float> {
-        get {
+        mutating get {
             assert(indexIsValid(index: index), "Index out of range")
             // Is it worst to "create" a new variable than to duplicate the code?
             let idx: Int
@@ -169,13 +167,15 @@ public struct FramedSignal {
             } else{
                 idx = index
             }
-            return signalFrame(
-                signal: self.signal.data,
+            signalFrameInPlace(
+                signal: self.signal,
+                frame: &self.frame,
                 index: idx,
                 frameSize: self.frameSize,
                 hopSize: self.hopSize,
                 origin: self.origin
             )
+            return self.frame
         }
     }
     
@@ -188,6 +188,139 @@ public struct FramedSignal {
     }
 }
 
+
+public func arrayFrameInPlace(
+    signal:Array<Float>,
+    frame: inout Array<Float>,
+    index: Int,
+    frameSize: Int,
+    hopSize: Int,
+    origin: Int = 0
+    // pad: Float = 0.0
+) {
+    // Length of the signal
+    let numSamples: Int = signal.count
+    
+    let refSample: Int = index * hopSize
+    
+    var start: Int = refSample - (frameSize / 2) - origin
+    
+    var stop: Int = start + frameSize
+    
+    let crit: Bool = start >= 0 && stop <= numSamples
+    
+    switch crit{
+    case true:
+        frame.replaceSubrange(0..<frameSize, with: signal[start..<stop])
+    case false:
+        frame *= Float(0)
+        var left: Int = 0
+        var right: Int = 0
+        if start < 0 {
+            left = min(stop, 0) - start
+            start = 0
+        }
+        
+        if stop > numSamples {
+            right = stop - max(start, numSamples)
+            stop = numSamples
+        }
+        
+        let signalLeft : Int = min(start, numSamples)
+        let signalRight: Int = max(stop, 0)
+        
+        frame.replaceSubrange(
+            left..<(frameSize - right),
+            with: signal[signalLeft..<signalRight]
+        )
+    }
+}
+
+func signalFrameInPlace(
+    signal:Signal,
+    frame: inout Array<Float>,
+    index: Int,
+    frameSize: Int,
+    hopSize: Int,
+    origin: Int = 0
+){
+    arrayFrameInPlace(
+        signal:signal.data.grid,
+        frame: &frame,
+        index: index,
+        frameSize: frameSize,
+        hopSize: hopSize,
+        origin: origin
+    )
+}
+
+func signalFrameInPlace(
+    signal:Array<Float>,
+    frame: inout Array<Float>,
+    index: Int,
+    frameSize: Int,
+    hopSize: Int,
+    origin: Int = 0
+){
+    arrayFrameInPlace(
+        signal:signal,
+        frame: &frame,
+        index: index,
+        frameSize: frameSize,
+        hopSize: hopSize,
+        origin: origin
+    )
+}
+
+public func signalFrame(
+    signal: Matrix<Float>,
+    index: Int,
+    frameSize: Int,
+    hopSize: Int,
+    origin: Int = 0,
+    pad: Float = 0.0
+) -> Array<Float> {
+    
+    // Length of the signal
+    let numSamples: Int = signal.count
+    
+    //
+    let refSample: Int = index * hopSize
+    
+    var start: Int = refSample - (frameSize / 2) - origin
+    
+    var stop: Int = start + frameSize
+    
+    if start >= 0 && stop <= numSamples {
+        return Array(signal.grid[start..<stop])
+    } else {
+        // Would this be the right way to do this?
+        var left: Int = 0
+        var right: Int = 0
+        var frame: Array<Float> = Array(repeating: pad, count: frameSize)
+        
+        if start < 0 {
+            left = min(stop, 0) - start
+            start = 0
+        }
+        
+        if stop > numSamples {
+            right = stop - max(start, numSamples)
+            stop = numSamples
+        }
+        
+        let signalLeft : Int = min(start, numSamples)
+        // let signalRight: Int = max(stop, 0)
+        
+        //frame.replaceSubrange(subrange:left..<(frameSize - right), with: signal.grid[signalLeft..<signalRight])
+        
+        // Figure out a way to do this the easiest
+        for i in 0..<(frameSize - right - left) {
+            frame[left + i] = signal.grid[signalLeft + i]
+        }
+        return frame
+    }
+}
 
 public func signalFrame(
     signal: Array<Float>,

@@ -74,9 +74,6 @@ final class MatrixTests: XCTestCase {
         // print(reloadedMatrix.grid)
         
         XCTAssertEqual(reloadedMatrix, matrix)
-        // XCTAssertEqual(reloadedMatrix.columns, matrix.columns)
-        // XCTAssertEqual(reloadedMatrix.grid, matrix.grid)
-        
         // Remove temp file
         let fileManager = FileManager.default
     

@@ -92,13 +92,15 @@ public class SpectrogramProcessor {
     }
     
     public func process(frames: FramedSignal) -> Matrix<Float>{
+        
+        var mutableFrames = frames
         var spectrogram = Matrix(
             rows: frames.numFrames,
             columns: self.numFFTBins,
             repeatedValue: Float(0)
         )
         for i in 0..<frames.numFrames {
-            self.computeSpectrogram(frame: frames[i])
+            self.computeSpectrogram(frame: mutableFrames[i])
             for j in 0..<self.numFFTBins {
                 spectrogram[i, j] = self.spectrogram[j]
             }

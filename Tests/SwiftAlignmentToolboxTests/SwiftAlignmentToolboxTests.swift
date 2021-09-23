@@ -1,41 +1,7 @@
     import XCTest
     @testable import SwiftAlignmentToolbox
     import Surge
-
-    final class SwiftAlignmentToolboxTests: XCTestCase {
-        func testExample() {
-            // This is an example of a functional test case.
-            // Use XCTAssert and related functions to verify your tests produce the correct
-            // results.
-            XCTAssertEqual(SwiftAlignmentToolbox().text, "Hello, World!")
-        }
-    }
     
-    
-    final class MathUtilsTests: XCTestCase {
-        func testSinc() {
-            let tol: Float = 1e-6
-            let x: Array<Float> = [-1.22795046,  2.36736427, -0.76388198,  0.42896561,  0.96992622,
-                                   -0.24800455,  0.80682479,  0.63854348, -1.45518737, -0.34262863,
-                                   -0.60116594, -0.45922278, -0.25039278,  0.05933658, -1.06086305,
-                                   -0.15171991]
-            let sincRes: Array<Float> = sinc(x)
-            let sincResPython: Array<Float> = [
-                -0.17017003,  0.1229526 ,  0.28152534,  0.72363999,  0.03096015,
-                0.90185309,  0.22499793,  0.45201704, -0.21657738,  0.81777727,
-                0.50296989,  0.6874693 ,  0.90001255,  0.99421852, -0.05702232,
-                0.96256318
-            ]
-            
-            let absError = zip(sincRes, sincResPython).map {abs($0 - $1)}
-            
-            for err in absError {
-                XCTAssertTrue(err < tol)
-            }
-            
-        }
-    }
-
     final class AlignmentToolsTest: XCTestCase {
         func testOnlineTimeWarping() {
             let dummy: Int = 1
@@ -43,104 +9,7 @@
         }
     }
     
-    final class SignalTest: XCTestCase {
-        func testSignal() {
-            var data: Array<Float> = Array(repeating: 0, count: Int.random(in: 500...1000))
-            
-            for i in 0..<data.count {
-                data[i] = Float.random(in: -100...100)
-            }
-            
-            let signal = Signal(
-                data: data,
-                sampleRate: 100,
-                norm: false,
-                gain: 0
-            )
-            
-            for i in 0..<data.count {
-                XCTAssertEqual(signal[i], data[i])
-            }
-            
-            let startIdx: Int = 30
-            let endIdx: Int = 70
-            
-            let sigSlice = signal[startIdx..<endIdx]
-            for i in 0..<(endIdx - startIdx) {
-                XCTAssertEqual(sigSlice[i + startIdx], data[i + startIdx])
-            }
-        }
-        
-        func testSignalNorm() {
-            var data: Array<Float> = Array(repeating: 0, count: Int.random(in: 500...1000))
-            
-            for i in 0..<data.count {
-                data[i] = Float.random(in: -100...100)
-            }
-            
-            let signal = Signal(
-                data: data,
-                sampleRate: 100,
-                norm: true,
-                gain: 0
-            )
-            
-            let startIdx: Int = 30
-            let endIdx: Int = 400
-            let dmax: Float = max(
-                data.max()!,
-                abs(data.min()!)
-            )
-            
-            let sigSlice = signal[startIdx..<endIdx]
-            for i in 0..<(endIdx - startIdx) {
-                XCTAssertEqual(sigSlice[i + startIdx], data[i + startIdx] / dmax)
-            }
-        }
-        
-        func testFramedSignal() {
-            var data: Array<Float> = Array(repeating: 0, count: 510)
-            
-            for i in 0..<data.count {
-                data[i] = Float.random(in: -100...100)
-            }
-            
-            let signal = Signal(
-                data: data,
-                sampleRate: 100,
-                norm: false,
-                gain: 0
-            )
-            
-            let frameSize: Int = 50
-            let hopSize: Int = 25
-            
-            let numFullFrames: Int = data.count / hopSize
-            let numFrames: Int = numFullFrames + 1
-            let framedSignal = FramedSignal(
-                signal: signal,
-                frameSize: frameSize,
-                hopSize: hopSize,
-                origin: "right"
-            )
-            
-            XCTAssertEqual(framedSignal.count, numFrames)
-            
-            for i in 0..<(numFullFrames - 1)  {
-                for (fv, tv) in zip(framedSignal[i], data[i*hopSize..<i*hopSize + frameSize]) {
-                    XCTAssertEqual(fv, tv)
-                }
-            }
-            
-            for (fv, tv) in zip(framedSignal[numFrames - 1], data[500..<510]) {
-                XCTAssertEqual(fv, tv)
-            }
-            
-            for fv in framedSignal[numFrames-1][10..<frameSize] {
-                XCTAssertEqual(fv, 0.0)
-            }
-        }
-    }
+
     
     final class SpectrogramTest: XCTestCase {
         func testFFT() {
