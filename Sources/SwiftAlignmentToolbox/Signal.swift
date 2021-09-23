@@ -158,7 +158,9 @@ public struct FramedSignal {
     }
     
     public subscript(index: Int) -> Array<Float> {
-        mutating get {
+        get {
+            // var mutableSelf = self
+            var frame: Array<Float> = Array(repeating: Float(0), count: self.frameSize)
             assert(indexIsValid(index: index), "Index out of range")
             // Is it worst to "create" a new variable than to duplicate the code?
             let idx: Int
@@ -169,13 +171,13 @@ public struct FramedSignal {
             }
             signalFrameInPlace(
                 signal: self.signal,
-                frame: &self.frame,
+                frame: &frame,
                 index: idx,
                 frameSize: self.frameSize,
                 hopSize: self.hopSize,
                 origin: self.origin
             )
-            return self.frame
+            return frame
         }
     }
     

@@ -17,135 +17,79 @@ public enum LoadAudioError: Error {
     case ResampleError
 }
 
-public func loadAudioFileNew(path: String, numChannels: Int?, sampleRate: Float?) -> Matrix<Float> {
+public func loadAudioFile(path: String) -> (Matrix<Float>, Double) {
     
     let url = URL(fileURLWithPath: path)
 
     let audio =  try! AVAudioFile(forReading : url)
+
+    let sampleRate = audio.fileFormat.sampleRate
     
-    let sr: Double
+    let frameCapacity: AVAudioFrameCount = AVAudioFrameCount(audio.length)
     
-    var doResample: Bool = false
-        
-    if sampleRate != nil {
-        if Float(audio.fileFormat.sampleRate) != sampleRate! {
-            doResample = true
-        }
-    }
+    let numChannels = audio.fileFormat.channelCount
     
-    let frameCapacity: AVAudioFrameCount
-    if sampleRate == nil || doResample {
-        sr = audio.fileFormat.sampleRate
-        frameCapacity = AVAudioFrameCount(audio.length)
-    } else {
-        sr = Double(sampleRate!)
-        
-        let sampleRatio: Float = sampleRate! / Float(audio.fileFormat.sampleRate)
-        
-        frameCapacity = AVAudioFrameCount(Int(Float(audio.length) * sampleRatio))
-    }
-    
-    let nCh: AVAudioChannelCount
-    
-    if numChannels == nil {
-        nCh = audio.fileFormat.channelCount
-    } else {
-        nCh = AVAudioChannelCount(numChannels!)
-    }
+    var signal: Matrix<Float> = Matrix(rows: Int(frameCapacity),
+                                       columns: Int(numChannels),
+                                       repeatedValue: Float(0))
+
     let format = AVAudioFormat(commonFormat:.pcmFormatFloat32,
-                               sampleRate: sr,
-                               channels: nCh,
+                               sampleRate: sampleRate,
+                               channels: numChannels,
                                interleaved: false)
     
     let audioBuffer = AVAudioPCMBuffer(pcmFormat: format!, frameCapacity: frameCapacity)!
     try! audio.read(into : audioBuffer, frameCount:UInt32(frameCapacity))
     let arraySize = Int(audioBuffer.frameLength)
-
-    var samples: [[Float]] = []
-    let signal: Matrix<Float>
+    
     for channel in 0..<audio.fileFormat.channelCount {
-        
-        let channelData: Array<Float> = Array(
+        signal[column: Int(channel)] = Array<Float>(
             UnsafeBufferPointer(
                 start: audioBuffer.floatChannelData![Int(channel)], count:arraySize
             )
         )
-        
-        if doResample {
-            
-            let resampledChannelData: Array<Float> = try! resample(
-                signal: channelData,
-                sampleRateOrig: Float(audio.fileFormat.sampleRate),
-                sampleRateNew: sampleRate!
-            )
-            samples.append(resampledChannelData)
-        } else {
-            samples.append(channelData)
-        }
-        
     }
-    // Rows are samples, channels are columns
-    if samples.count == 1 {
-        signal = Matrix<Float>(samples)
-    } else {
-        signal = Matrix<Float>(samples)
-    }
-    
-    return signal
+    return (signal, sampleRate)
 }
 
-public func loadAudioFile(path: String, numChannels: Int?, sampleRate: Float?) -> Matrix<Float> {
+public func loadAudioFile2(path: String, numChannels: Int, sampleRate: Double) -> (Matrix<Float>, Double) {
+    
     let url = URL(fileURLWithPath: path)
 
     let audio =  try! AVAudioFile(forReading : url)
     
-    var doResample: Bool = false
-        
-    if sampleRate != nil {
-        if Float(audio.fileFormat.sampleRate) != sampleRate! {
-            doResample = true
-        }
-    }
+    let format = AVAudioFormat(commonFormat:.pcmFormatFloat32,
+                               sampleRate: sampleRate,
+                               channels: AVAudioChannelCount(numChannels),
+                               interleaved: false)
+    
+    // audio.fileFormat = format
 
-    let format = AVAudioFormat(commonFormat:.pcmFormatFloat32, sampleRate:audio.fileFormat.sampleRate, channels: audio.fileFormat.channelCount,  interleaved: false)
-    let audioBuffer = AVAudioPCMBuffer(pcmFormat: format!, frameCapacity: AVAudioFrameCount(audio.length))!
-    try! audio.read(into : audioBuffer, frameCount:UInt32(audio.length))
+    // let sampleRate = audio.fileFormat.sampleRate
+    
+    let frameCapacity: AVAudioFrameCount = AVAudioFrameCount(audio.length)
+    
+    // let numChannels = audio.fileFormat.channelCount
+    
+    var signal: Matrix<Float> = Matrix(rows: Int(frameCapacity),
+                                       columns: Int(numChannels),
+                                       repeatedValue: Float(0))
+
+    
+    
+    let audioBuffer = AVAudioPCMBuffer(pcmFormat: format!, frameCapacity: frameCapacity)!
+    try! audio.read(into : audioBuffer, frameCount:UInt32(frameCapacity))
     let arraySize = Int(audioBuffer.frameLength)
-
-    var samples: [[Float]] = []
     
     for channel in 0..<audio.fileFormat.channelCount {
         
-        let channelData: Array<Float> = Array(
+        signal[column: Int(channel)] = Array<Float>(
             UnsafeBufferPointer(
                 start: audioBuffer.floatChannelData![Int(channel)], count:arraySize
             )
         )
-        
-        if doResample {
-            print("resampling \(Int(channel))")
-            let resampledChannelData: Array<Float> = try! resample(
-                signal: channelData,
-                sampleRateOrig: Float(audio.fileFormat.sampleRate),
-                sampleRateNew: sampleRate!
-            )
-            samples.append(resampledChannelData)
-        } else {
-            samples.append(channelData)
-        }
-        
     }
-    print("finished reading audio data")
-    // Rows are samples, channels are columns
-    let signal = Matrix<Float>(samples)
-    
-    if numChannels != nil {
-        print("remixing")
-        let remixedSignal = try! remix(signal: signal, numChannels: numChannels!)
-        return remixedSignal
-    } else {
-        return signal
-    }
+    return (signal, sampleRate)
 }
 
 public func remix(signal: Matrix<Float>, numChannels: Int) throws -> Matrix<Float> {
