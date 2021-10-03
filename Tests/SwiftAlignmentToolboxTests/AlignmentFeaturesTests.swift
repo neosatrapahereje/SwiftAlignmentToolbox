@@ -17,5 +17,23 @@ final class AlignmentFeaturesTest: XCTestCase {
         print(spectrogram.rows)
         print(spectrogram.columns)
         
+        let path: String = "/tmp/swift_testFeatureSaving.swz"
+        
+        spectrogram.saveToFile(path: path)
+        
+        let reloadedMatrix: Matrix<Float> = readMatrixFromFile(path: path)
+        
+        XCTAssertEqual(reloadedMatrix, spectrogram)
+        // Remove temp file
+        let fileManager = FileManager.default
+    
+        if fileManager.fileExists(atPath: path) {
+            
+            do {
+                try fileManager.removeItem(atPath: path)
+            } catch let error as NSError {
+                print("An error took place: \(error)")
+            }
+        }
     }
 }
