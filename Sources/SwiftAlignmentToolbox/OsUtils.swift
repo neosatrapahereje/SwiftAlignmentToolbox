@@ -8,9 +8,7 @@
 import Foundation
 
 func writeToFile(data: Data, url: URL , compress: Bool=true){
-    // Adapted from https://stackoverflow.com/a/57268481
-    // let url =  URL(fileURLWithPath: fileName)
-    
+    // Adapted from https://stackoverflow.com/a/57268481    
     
     // if file exists then write data
     if FileManager.default.fileExists(atPath: url.path) {

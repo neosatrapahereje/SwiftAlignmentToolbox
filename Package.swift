@@ -26,7 +26,11 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "SwiftAlignmentToolbox",
-            dependencies: ["Surge"]),
+            dependencies: ["Surge"],
+            resources: [
+              //.process("Resources"),
+              .process("Resources")
+            ]),
         .testTarget(
             name: "SwiftAlignmentToolboxTests",
             dependencies: ["SwiftAlignmentToolbox"]),

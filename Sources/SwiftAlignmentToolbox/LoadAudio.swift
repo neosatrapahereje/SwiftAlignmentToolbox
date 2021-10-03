@@ -17,9 +17,9 @@ public enum LoadAudioError: Error {
     case ResampleError
 }
 
-public func loadAudioFile(path: String) -> (Matrix<Float>, Double) {
+public func loadAudioFile(url: URL) -> (Matrix<Float>, Double) {
     
-    let url = URL(fileURLWithPath: path)
+    // let url = URL(fileURLWithPath: path)
 
     let audio =  try! AVAudioFile(forReading : url)
 
@@ -52,7 +52,13 @@ public func loadAudioFile(path: String) -> (Matrix<Float>, Double) {
     return (signal, sampleRate)
 }
 
-public func loadAudioFile2(path: String, numChannels: Int, sampleRate: Double) -> (Matrix<Float>, Double) {
+public func loadAudioFile(path: String) -> (Matrix<Float>, Double) {
+    let url = URL(fileURLWithPath: path)
+    let (signal, sampleRate) = loadAudioFile(url: url)
+    return (signal, sampleRate)
+}
+
+public func loadAudioFileOld(path: String, numChannels: Int, sampleRate: Double) -> (Matrix<Float>, Double) {
     
     let url = URL(fileURLWithPath: path)
 

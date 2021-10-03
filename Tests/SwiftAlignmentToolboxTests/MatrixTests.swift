@@ -63,15 +63,15 @@ final class MatrixTests: XCTestCase {
     }
     
     func testMatrixSaving() {
-        let array : [[Float]] = [[1.1, 3.7] , [2.5, 6.4], [7.8, 8.3]]
-        let matrix: Matrix<Float> = Matrix(array)
+        let matrix: Matrix<Float> = Matrix<Float>.randomNormal(rows:1000, columns:200)
+        // It takes 1.637 seconds for 1000x200 matrix
+        // It takes 31+ seconds for 10000x200 matrix
         
         let path: String = "/tmp/swift_testMatrixSaving.swz"
         
         matrix.saveToFile(path: path)
         
         let reloadedMatrix: Matrix<Float> = readMatrixFromFile(path: path)
-        // print(reloadedMatrix.grid)
         
         XCTAssertEqual(reloadedMatrix, matrix)
         // Remove temp file

@@ -84,7 +84,7 @@ final class SignalTest: XCTestCase {
         
         let numFullFrames: Int = data.count / hopSize
         let numFrames: Int = numFullFrames + 1
-        var framedSignal = FramedSignal(
+        let framedSignal = FramedSignal(
             signal: signal,
             frameSize: frameSize,
             hopSize: hopSize,
