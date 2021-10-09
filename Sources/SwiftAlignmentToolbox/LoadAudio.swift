@@ -19,8 +19,6 @@ public enum LoadAudioError: Error {
 
 public func loadAudioFile(url: URL) -> (Matrix<Float>, Double) {
     
-    // let url = URL(fileURLWithPath: path)
-
     let audio =  try! AVAudioFile(forReading : url)
 
     let sampleRate = audio.fileFormat.sampleRate

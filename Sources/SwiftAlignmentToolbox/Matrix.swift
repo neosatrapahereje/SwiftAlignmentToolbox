@@ -32,7 +32,7 @@ public func readMatrixFromFile<T>(path: String) -> Matrix<T> {
 }
 
 extension Matrix {
-
+    // This method does not really work well for large matrices...
     public func saveToFile(path: String, compress: Bool = true) {
         let pathAsURL = URL(fileURLWithPath: path)
         self.saveToFile(url: pathAsURL)
@@ -45,4 +45,88 @@ extension Matrix {
                         compress: compress)
         }
     }
+}
+
+public class MatrixConfig: Codable {
+    public let rows: Int
+    public let columns: Int
+    public let gridPath: String
+    
+    public enum CodingKeys: String, CodingKey {
+        case rows
+        case columns
+        case gridPath
+    }
+    
+    required public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.rows = try values.decode(Int.self, forKey: .rows)
+        self.columns = try values.decode(Int.self, forKey: .columns)
+        self.gridPath = try values.decode(String.self, forKey: .gridPath)
+    }
+    
+    public func encode(from encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.rows, forKey: .rows)
+        try container.encode(self.columns, forKey: .columns)
+        try container.encode(self.gridPath, forKey: .gridPath)
+    }
+    
+    public init(rows: Int, columns: Int, gridPath: String) {
+        self.rows = rows
+        self.columns = columns
+        self.gridPath = gridPath
+    }
+    
+    public func saveToFile(url: URL) {
+        if let encodedData = try? JSONEncoder().encode(self) {
+            writeToFile(data: encodedData,
+                        url: url,
+                        compress: false)
+        }
+    }
+    public func saveToFile(path: String) {
+        let pathAsURL = URL(fileURLWithPath: path)
+        self.saveToFile(url: pathAsURL)
+    }
+}
+
+public func saveMatrix(matrix: Matrix<Float>, path: String) {
+    let gridPath: String = path + ".bin"
+    let gridURL: URL = URL(fileURLWithPath: gridPath)
+    let matrixConf = MatrixConfig(
+        rows: matrix.rows,
+        columns: matrix.columns,
+        gridPath: gridPath)
+    matrixConf.saveToFile(path: path)
+    
+    saveMatrixGridToBin(matrix: matrix, url: gridURL)
+}
+
+func saveMatrixGridToBin(matrix: Matrix<Float>, url: URL) {
+    let wData = Data(
+        bytes: matrix.grid,
+        count: matrix.grid.count * MemoryLayout<Float>.stride
+    )
+        do {
+            try wData.write(to: url)
+        } catch {
+            print(error)
+        }
+}
+
+func readMatrixFromConfig<T>(path: String) -> Matrix<T> {
+    let bdata = NSData(contentsOfFile: path)! as Data
+    let decoder = JSONDecoder()
+    let decoded = try? decoder.decode(MatrixConfig.self, from: bdata)
+    
+    let rData: Data = NSData(contentsOfFile: decoded!.gridPath)! as Data
+    
+    var grid = Array<T>(repeating: T(0), count: rData.count/MemoryLayout<T>.stride)
+            _ = grid.withUnsafeMutableBytes { rData.copyBytes(to: $0) }
+    
+    let matrix: Matrix<T> = Matrix<T>(rows: decoded!.rows,
+                                      columns: decoded!.columns,
+                                      grid: grid)
+    return matrix
 }

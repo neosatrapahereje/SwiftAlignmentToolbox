@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Surge
 
 func writeToFile(data: Data, url: URL , compress: Bool=true){
     // Adapted from https://stackoverflow.com/a/57268481    
@@ -79,4 +80,9 @@ func decompressData(compressedData: Data) throws -> Data? {
         print(error.localizedDescription)
         return nil
     }
+}
+
+public func savedMatrixSizeMB(rows: Int, columns: Int) -> Float {
+    let fileSize: Float = Float(rows * columns * 32) * 0.000000125
+    return fileSize
 }

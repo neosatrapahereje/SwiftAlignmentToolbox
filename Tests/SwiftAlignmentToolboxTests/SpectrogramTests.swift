@@ -41,4 +41,48 @@ final class SpectrogramTest: XCTestCase {
             
         }
     }
+    func testComputeFeatures() {
+        let start = DispatchTime.now()
+        // let path: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/DSQ_tracks/kdf_c14_mono.wav"
+        // let (audioFile, sampleRate) = loadAudioFile(path: path)
+        let (audioFile, sampleRate) = loadAudioFile(url: SampleData.audioExampleMonoURL!)
+        let end = DispatchTime.now()
+        let nanoTime = end.uptimeNanoseconds - start.uptimeNanoseconds // <<<<< Difference in nano seconds (UInt64)
+        let timeInterval = Double(nanoTime) / 1_000_000_000 // Technically could overflow for long running tests
+        print("Time load audio file \(timeInterval) seconds")
+
+        let start_s = DispatchTime.now()
+        let signal = Signal(data: audioFile,
+                            sampleRate: Int(sampleRate))
+        print("created signal")
+        let end_s = DispatchTime.now()
+        let nanoTime_s = end_s.uptimeNanoseconds - start_s.uptimeNanoseconds // <<<<< Difference in nano seconds (UInt64)
+        let timeInterval_s = Double(nanoTime_s) / 1_000_000_000 // Technically could overflow for long running tests
+        print("Time to create signal \(timeInterval_s) seconds")
+
+        let start_f = DispatchTime.now()
+        let frameSize: Int = 2048 * 2//Int(sampleRate * 0.1)
+        let hopSize: Int = Int(frameSize) / 2
+        let framedSignal = FramedSignal(
+            signal: signal,
+            frameSize: frameSize,
+            hopSize: hopSize)
+        let end_f = DispatchTime.now()
+        let nanoTime_f = end_f.uptimeNanoseconds - start_f.uptimeNanoseconds // <<<<< Difference in nano seconds (UInt64)
+        let timeInterval_f = Double(nanoTime_f) / 1_000_000_000 // Technically could overflow for long running tests
+        print("Time to frame signal \(timeInterval_f) seconds")
+
+        // let processor = SpectrogramProcessor(frameSize: frameSize, includeNyquist: false)
+        let start_p = DispatchTime.now()
+
+        let spectrogram = Spectrogram(framedSignal: framedSignal)
+        print("numFFTBins \(spectrogram.numFFTBins)")
+        print("numFrames \(framedSignal.numFrames)")
+        
+        let end_p = DispatchTime.now()
+        let nanoTime_p = end_p.uptimeNanoseconds - start_p.uptimeNanoseconds // <<<<< Difference in nano seconds (UInt64)
+        let timeInterval_p = Double(nanoTime_p) / 1_000_000_000 // Technically could overflow for long running tests
+        print("Time to compute spectrogram \(timeInterval_p) seconds")
+        XCTAssertEqual(spectrogram.numFFTBins, spectrogram.spectrogram.columns)
+    }
 }

@@ -63,7 +63,7 @@ final class MatrixTests: XCTestCase {
     }
     
     func testMatrixSaving() {
-        let matrix: Matrix<Float> = Matrix<Float>.randomNormal(rows:1000, columns:200)
+        let matrix: Matrix<Float> = Matrix<Float>.randomNormal(rows:10, columns:7)
         // It takes 1.637 seconds for 1000x200 matrix
         // It takes 31+ seconds for 10000x200 matrix
         
@@ -73,6 +73,29 @@ final class MatrixTests: XCTestCase {
         
         let reloadedMatrix: Matrix<Float> = readMatrixFromFile(path: path)
         
+        XCTAssertEqual(reloadedMatrix, matrix)
+        // Remove temp file
+        let fileManager = FileManager.default
+    
+        if fileManager.fileExists(atPath: path) {
+            
+            do {
+                try fileManager.removeItem(atPath: path)
+            } catch let error as NSError {
+                print("An error took place: \(error)")
+            }
+        }
+    }
+    
+    func testMatrixSavingFromConfig() {
+        // This test can last a while...
+        // The point is to see if it can save large matrices (the old method cannot do this)
+        let matrix: Matrix<Float> = Matrix<Float>.randomNormal(rows:10000, columns:7000)
+        let path: String = "/tmp/swift_testMatrixSavingFromConfig.json"
+        
+        saveMatrix(matrix: matrix, path: path)
+        
+        let reloadedMatrix: Matrix<Float> = readMatrixFromConfig(path: path)
         XCTAssertEqual(reloadedMatrix, matrix)
         // Remove temp file
         let fileManager = FileManager.default

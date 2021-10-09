@@ -53,8 +53,10 @@ public class SpectrogramProcessor {
     var outputReal: Array<Float>
     var outputImaginary: Array<Float>
     let inputImaginary: Array<Float> // We assume that the signals are all real
-    var spectrogram: Array<Float>
+    // var spectrogram: Array<Float>
     let numFFTBins: Int
+    
+    let fwdDFT: vDSP.DFT<Float>
     
     public init(
         frameSize: Int,
@@ -71,7 +73,12 @@ public class SpectrogramProcessor {
         self.outputReal = Array(repeating: Float(0), count: self.frameSize)
         self.outputImaginary = Array(repeating: Float(0), count: self.frameSize)
         self.inputImaginary = Array(repeating: Float(0), count: self.frameSize)
-        self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
+        self.fwdDFT = vDSP.DFT(
+            count: self.frameSize,
+            direction: .forward,
+            transformType: .complexComplex,
+            ofType: Float.self)!
+        // self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
     }
     
     public init(
@@ -88,21 +95,25 @@ public class SpectrogramProcessor {
         self.outputReal = Array(repeating: Float(0), count: self.frameSize)
         self.outputImaginary = Array(repeating: Float(0), count: self.frameSize)
         self.inputImaginary = Array(repeating: Float(0), count: self.frameSize)
-        self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
+        self.fwdDFT = vDSP.DFT(
+            count: self.frameSize,
+            direction: .forward,
+            transformType: .complexComplex,
+            ofType: Float.self)!
+        // self.spectrogram = Array(repeating: Float(0), count: self.frameSize)
     }
     
     public func process(frames: FramedSignal) -> Matrix<Float>{
         
-        var mutableFrames = frames
         var spectrogram = Matrix(
             rows: frames.numFrames,
             columns: self.numFFTBins,
             repeatedValue: Float(0)
         )
         for i in 0..<frames.numFrames {
-            self.computeSpectrogram(frame: mutableFrames[i])
+            let spec = self.process(frame: frames[i])
             for j in 0..<self.numFFTBins {
-                spectrogram[i, j] = self.spectrogram[j]
+                spectrogram[i, j] = spec[j]
             }
         }
         return spectrogram
@@ -123,35 +134,30 @@ public class SpectrogramProcessor {
         let spectrogram = self.process(frames: frames)
         return spectrogram
     }
-    
+        
     public func process(frame: Array<Float>) -> Array<Float> {
-        self.computeSpectrogram(frame: frame)
-        let spectrogram: Array<Float> = Array(self.spectrogram[0..<self.numFFTBins])
-        return spectrogram
-    }
-    
-    public func process(frame: Array<Float>, spectrogram: inout Array<Float>) {
         // Check that spectrogam has the same number of elements?
         // For speed reasons, probably not...
-        self.computeSpectrogram(frame: frame)
-        for i in 0..<self.numFFTBins {
-            spectrogram[i] = self.spectrogram[i]
-        }
+        var spectrogram: Array<Float> = Array(
+            repeating: Float(0),
+            count: self.numFFTBins)
+        self.computeSpectrogram(frame: frame, spectrogram: &spectrogram)
+        return spectrogram
     }
-    public func computeSpectrogram(frame: Array<Float>) {
-        // TODO: Add window and number of bins
-        computeFFT(
+    func computeSpectrogram(
+        frame: Array<Float>,
+        spectrogram: inout Array<Float>
+    ){
+        self.fwdDFT.transform(
             inputReal: frame,
             inputImaginary: self.inputImaginary,
             outputReal: &self.outputReal,
-            outputImaginary: &self.outputImaginary,
-            frameSize: self.frameSize
-        )
+            outputImaginary: &self.outputImaginary)
         computeMagnitudeSpectrogram(
             fftOutputReal: &self.outputReal,
             fftOutputImaginary: &self.outputImaginary,
-            spectrogram: &self.spectrogram,
-            frameSize: self.frameSize
+            spectrogram: &spectrogram,
+            frameSize: self.numFFTBins
         )
     }
 }
