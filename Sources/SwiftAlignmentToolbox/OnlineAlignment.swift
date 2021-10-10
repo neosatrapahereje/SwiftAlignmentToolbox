@@ -14,15 +14,16 @@ import Surge
 public class OnlineTimeWarping{
     // Online Time Warping is the on-line version of
     // Dynamic Time Warping
-    let referenceFeatures: Matrix<Float>
-    var currentPosition: Int = 0
-    var globalCostMatrix: Matrix<Float>
-    let stepSize: Int
-    let windowSize: Int
-    var inputIndex: Int = 0
-    let nRef: Int
-    var warpingPath: [[Int]]
-    let localDistance : ([Float], [Float]) -> Float
+    public let referenceFeatures: Matrix<Float>
+    public var currentPosition: Int = 0
+    public var globalCostMatrix: Matrix<Float>
+    public let stepSize: Int
+    public let windowSize: Int
+    public var inputIndex: Int = 0
+    public let nRef: Int
+    public var warpingPath: [[Int]]
+    public let localDistance : ([Float], [Float]) -> Float
+    public var windowCost: [Float]
     
     public init(
         referenceFeatures: Matrix<Float>,
@@ -38,12 +39,6 @@ public class OnlineTimeWarping{
         self.nRef = referenceFeatures.count
         
         // Initialize the global cost matrix with "infinite"
-        /*
-        self.globalCostMatrix = Array(
-            repeating: Array(repeating: Float.infinity, count: 2),
-            count: self.nRef + 1
-        )
-         */
         self.globalCostMatrix = Matrix<Float>(rows: self.nRef + 1,
                                               columns: 2,
                                               repeatedValue: Float.infinity)
@@ -61,6 +56,10 @@ public class OnlineTimeWarping{
         else {
             self.localDistance = EuclideanDistance
         }
+        
+        self.windowCost = Array<Float>(
+            repeating: Float(0),
+            count: 2 * self.windowSize)
     }
     
     public func step(inputFeatures: [Float]){
@@ -72,18 +71,21 @@ public class OnlineTimeWarping{
     
         var minIndex: Int = 0
         
+        /*
         let windowCost = self.vdist(
             start: lower,
             end: upper,
-            // referenceFeatures: self.referenceFeatures[lower..<upper],
             inputFeatures: inputFeatures)
+         */
+        self.vdist(start: lower, end: upper, inputFeatures: inputFeatures)
     
         for (idx, scoreIndex) in (lower..<upper).enumerated() {
             // print(idx, scoreIndex)
             
             // Special case: cell (0, 0)
             if scoreIndex == 0 && self.inputIndex == 0 {
-                self.globalCostMatrix[1, 1] = windowCost.reduce(0, +)
+                // self.globalCostMatrix[1, 1] = windowCost.reduce(0, +)
+                self.globalCostMatrix[1, 1] = Surge.sum(windowCost)
                 minCost = self.globalCostMatrix[1, 1]
                 minIndex = 0
                 continue
@@ -110,10 +112,14 @@ public class OnlineTimeWarping{
         }
         
         // Is there a better way to do this?
+        self.globalCostMatrix[column: 0] = self.globalCostMatrix[column: 1]
+        self.globalCostMatrix[column: 1] *= (1e-6 + Float.infinity)
+        /*
         for i in Array(0..<self.nRef){
             self.globalCostMatrix[i, 0] = self.globalCostMatrix[i, 1]
-            self.globalCostMatrix[i, 1] =  Float.infinity
+            self.globalCostMatrix[i, 1] *= (1e-6 + Float.infinity)
         }
+         */
         
         // Adapt currentPosition: do not go backwards, but also go a maximum of N steps forward
         self.currentPosition = min(max(self.currentPosition, minIndex),
@@ -135,6 +141,7 @@ public class OnlineTimeWarping{
         return (lower, upper)
     }
     
+    /*
     func vdist(start: Int, end: Int,
                inputFeatures: [Float]) -> [Float]{
         // Compute the distance between a vector and each of the rows of a matrix
@@ -143,5 +150,12 @@ public class OnlineTimeWarping{
             dist[i] = self.localDistance(self.referenceFeatures[row: rix], inputFeatures)
         }
         return dist
+    }
+     */
+    func vdist(start: Int, end: Int, inputFeatures: [Float]) {
+        self.windowCost *= Float(0.0)
+        for (i, rix) in (start..<end).enumerated() {
+            self.windowCost[i] = self.localDistance(self.referenceFeatures[row: rix], inputFeatures)
+        }
     }
 }

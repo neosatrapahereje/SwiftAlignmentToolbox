@@ -171,10 +171,13 @@ public func linSpace(start: Float, stop: Float, num: Int, endpoint: Bool = true)
 /*** Local Distances    */
 public func l1Distance(_ x: [Float], _ y: [Float]) -> Float {
     // L1 (Manhattan) Distance between two vectors
+    /*
     var dist: Float = 0
     for (i, val) in x.enumerated(){
         dist += abs(y[i] - val)
     }
+     */
+    let dist: Float = Surge.sum(Surge.abs(Surge.sub(x, y)))
     return dist
 }
 
@@ -198,8 +201,9 @@ public func CosineDistance(_ x: [Float], _ y: [Float]) -> Float {
 
 public func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
     // Euclidean Distance
-    var dist: Float = 0
-    dist = sqrt(vDSP.distanceSquared(x, y))
+    // var dist: Float = 0
+    // let dist: Float = sqrt(vDSP.distanceSquared(x, y))
+    let dist: Float = Surge.dist(x, y)
     return dist
 }
 
@@ -207,8 +211,8 @@ public func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
 public func vNorm(_ x: [Float]) -> Float {
     // Norm of a vector
     // Probably this method exists somewhere else...
-    var norm : Float = 0
-    norm = sqrt(vDSP.dot(x, x))
+    // var norm : Float = 0
+    let norm = sqrt(vDSP.dot(x, x))
     return norm
 }
 
