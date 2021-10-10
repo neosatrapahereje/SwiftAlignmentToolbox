@@ -47,7 +47,15 @@ func computeMagnitudeSpectrogram(
             }
 }
 
-public class SpectrogramProcessor {
+public class Processor {
+
+    public func process(frame: Array<Float>) -> Array<Float> {
+        // dummy identity function
+        return frame
+    }
+}
+
+public class SpectrogramProcessor: Processor {
     
     let frameSize: Int // TODO: Ensure that this is a power of two
     var outputReal: Array<Float>
@@ -135,7 +143,7 @@ public class SpectrogramProcessor {
         return spectrogram
     }
         
-    public func process(frame: Array<Float>) -> Array<Float> {
+    public override func process(frame: Array<Float>) -> Array<Float> {
         // Check that spectrogam has the same number of elements?
         // For speed reasons, probably not...
         var spectrogram: Array<Float> = Array(

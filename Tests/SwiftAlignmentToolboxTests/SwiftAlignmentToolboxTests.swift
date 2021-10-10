@@ -225,10 +225,12 @@
             XCTAssertEqual(pythonWarpingPath, oltw.warpingPath)
         }
         
+        /*
         func testOnlineTimeWarping2() {
             let refPath: String = "/Users/carlos/Repos/ContraPunctor/dsq_tracks-kdf_c14_mono.json"
             
             let referenceFeatures: Matrix<Float> = readMatrixFromConfig(path: refPath)
+            print(referenceFeatures.rows)
 
             let oltw = OnlineTimeWarping(
                 referenceFeatures: referenceFeatures,
@@ -237,11 +239,10 @@
                 localDistance: "L1"
             )
             
-            for i in 0..<100 {
+            for i in 0..<10 {
                 oltw.step(inputFeatures: referenceFeatures[row: i])
-                // print(oltw.currentPosition)
             }
             print(oltw.warpingPath)
-            // XCTAssertEqual(pythonWarpingPath, oltw.warpingPath)
         }
+         */
     }

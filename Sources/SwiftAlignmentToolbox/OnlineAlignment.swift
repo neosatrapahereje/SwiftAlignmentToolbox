@@ -71,16 +71,9 @@ public class OnlineTimeWarping{
     
         var minIndex: Int = 0
         
-        /*
-        let windowCost = self.vdist(
-            start: lower,
-            end: upper,
-            inputFeatures: inputFeatures)
-         */
         self.vdist(start: lower, end: upper, inputFeatures: inputFeatures)
     
         for (idx, scoreIndex) in (lower..<upper).enumerated() {
-            // print(idx, scoreIndex)
             
             // Special case: cell (0, 0)
             if scoreIndex == 0 && self.inputIndex == 0 {
