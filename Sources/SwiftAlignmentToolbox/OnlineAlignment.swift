@@ -14,9 +14,9 @@ import Surge
 public class OnlineTimeWarping{
     // Online Time Warping is the on-line version of
     // Dynamic Time Warping
-    let referenceFeatures: [[Float]]
+    let referenceFeatures: Matrix<Float>
     var currentPosition: Int = 0
-    var globalCostMatrix: [[Float]]
+    var globalCostMatrix: Matrix<Float>
     let stepSize: Int
     let windowSize: Int
     var inputIndex: Int = 0
@@ -24,10 +24,12 @@ public class OnlineTimeWarping{
     var warpingPath: [[Int]]
     let localDistance : ([Float], [Float]) -> Float
     
-    public init(_ referenceFeatures: [[Float]],
-         _ stepSize: Int = 5,
-         _ windowSize: Int = 100,
-         _ localDistance: String = "L1"){
+    public init(
+        referenceFeatures: Matrix<Float>,
+        stepSize: Int = 5,
+        windowSize: Int = 100,
+        localDistance: String = "L1"
+    ){
         
         // The pre-computed reference features
         self.referenceFeatures = referenceFeatures
@@ -36,10 +38,15 @@ public class OnlineTimeWarping{
         self.nRef = referenceFeatures.count
         
         // Initialize the global cost matrix with "infinite"
+        /*
         self.globalCostMatrix = Array(
             repeating: Array(repeating: Float.infinity, count: 2),
             count: self.nRef + 1
         )
+         */
+        self.globalCostMatrix = Matrix<Float>(rows: self.nRef + 1,
+                                              columns: 2,
+                                              repeatedValue: Float.infinity)
         self.stepSize = stepSize
         self.windowSize = windowSize
         self.currentPosition = 0
@@ -58,7 +65,7 @@ public class OnlineTimeWarping{
     
     public func step(inputFeatures: [Float]){
         // Get current window
-        let (lower, upper, window) = self.selectWindow(currentPosition: self.currentPosition)
+        let (lower, upper) = self.selectWindow(currentPosition: self.currentPosition)
         
         // initial minimum cost to compare
         var minCost: Float = Float.infinity
@@ -66,16 +73,18 @@ public class OnlineTimeWarping{
         var minIndex: Int = 0
         
         let windowCost = self.vdist(
-            referenceFeatures: Array(self.referenceFeatures[lower..<upper]),
+            start: lower,
+            end: upper,
+            // referenceFeatures: self.referenceFeatures[lower..<upper],
             inputFeatures: inputFeatures)
     
-        for (idx, scoreIndex) in window.enumerated() {
+        for (idx, scoreIndex) in (lower..<upper).enumerated() {
             // print(idx, scoreIndex)
             
             // Special case: cell (0, 0)
             if scoreIndex == 0 && self.inputIndex == 0 {
-                self.globalCostMatrix[1][1] = windowCost.reduce(0, +)
-                minCost = self.globalCostMatrix[1][1]
+                self.globalCostMatrix[1, 1] = windowCost.reduce(0, +)
+                minCost = self.globalCostMatrix[1, 1]
                 minIndex = 0
                 continue
             }
@@ -83,12 +92,12 @@ public class OnlineTimeWarping{
             let localDist: Float = windowCost[idx]
             
             // update global costs
-            let dist1: Float = self.globalCostMatrix[scoreIndex][1] + localDist
-            let dist2: Float = self.globalCostMatrix[scoreIndex + 1][0] + localDist
-            let dist3: Float = self.globalCostMatrix[scoreIndex][0] + localDist
+            let dist1: Float = self.globalCostMatrix[scoreIndex, 1] + localDist
+            let dist2: Float = self.globalCostMatrix[scoreIndex + 1, 0] + localDist
+            let dist3: Float = self.globalCostMatrix[scoreIndex, 0] + localDist
             
             let minDist: Float = min(dist1, dist2, dist3)
-            self.globalCostMatrix[scoreIndex + 1][1] = minDist
+            self.globalCostMatrix[scoreIndex + 1, 1] = minDist
             
             // Normalize cost (as proposed by Arzt et al.)
             let normCost = minDist / Float(self.inputIndex + scoreIndex + 1)
@@ -102,8 +111,8 @@ public class OnlineTimeWarping{
         
         // Is there a better way to do this?
         for i in Array(0..<self.nRef){
-            self.globalCostMatrix[i][0] = self.globalCostMatrix[i][1]
-            self.globalCostMatrix[i][1] =  Float.infinity
+            self.globalCostMatrix[i, 0] = self.globalCostMatrix[i, 1]
+            self.globalCostMatrix[i, 1] =  Float.infinity
         }
         
         // Adapt currentPosition: do not go backwards, but also go a maximum of N steps forward
@@ -118,20 +127,20 @@ public class OnlineTimeWarping{
         
     }
     
-    func selectWindow(currentPosition: Int) -> (Int, Int, [Int]) {
+    func selectWindow(currentPosition: Int) -> (Int, Int) {
         // Select window
         let lower: Int = max(currentPosition - self.windowSize, 0)
         let upper: Int = min(currentPosition + self.windowSize, self.nRef)
-        let window: [Int] = Array(lower..<upper)
-        return (lower, upper, window)
+        // let window: [Int] = Array(lower..<upper)
+        return (lower, upper)
     }
     
-    func vdist(referenceFeatures: [[Float]],
+    func vdist(start: Int, end: Int,
                inputFeatures: [Float]) -> [Float]{
         // Compute the distance between a vector and each of the rows of a matrix
-        var dist: [Float] = Array(repeating: 0, count: referenceFeatures.count)
-        for (i, row) in referenceFeatures.enumerated() {
-            dist[i] = self.localDistance(row, inputFeatures)
+        var dist: [Float] = Array(repeating: 0, count: (end - start))
+        for (i, rix) in (start..<end).enumerated() {
+            dist[i] = self.localDistance(self.referenceFeatures[row: rix], inputFeatures)
         }
         return dist
     }

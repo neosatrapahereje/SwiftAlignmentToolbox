@@ -12,16 +12,17 @@ import Surge
 
 final class AlignmentFeaturesTest: XCTestCase {
     func testLinearSpectrogramAlignmentFeatures() {
-        // let (audioFileMono, sampleRate) = loadAudioFile(url: SampleData.audioExampleMonoURL!)
         let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(url: SampleData.audioExampleMonoURL!)
         print(spectrogram.rows)
         print(spectrogram.columns)
         
         let path: String = "/tmp/swift_testFeatureSaving.swz"
         
-        spectrogram.saveToFile(path: path)
+        // spectrogram.saveToFile(path: path)
         
-        let reloadedMatrix: Matrix<Float> = readMatrixFromFile(path: path)
+        saveMatrix(matrix: spectrogram, path: path)
+        
+        let reloadedMatrix: Matrix<Float> = readMatrixFromConfig(path: path)
         
         XCTAssertEqual(reloadedMatrix, spectrogram)
         // Remove temp file
@@ -35,5 +36,31 @@ final class AlignmentFeaturesTest: XCTestCase {
                 print("An error took place: \(error)")
             }
         }
+    }
+    
+    func testLinearSpectrogramAlignmentKDF14() {
+        // let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(url: SampleData.audioExampleMonoURL!)
+        let kdfpath: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/DSQ_tracks/kdf_c14_mono.wav"
+        
+        print("Computing spectrogram")
+        let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(
+            path: kdfpath,
+            frameSize: 2048,
+            hopSize: Int(44100.0 * 0.01)
+        )
+        print(spectrogram.rows)
+        print(spectrogram.columns)
+        
+        let path: String = "/Users/carlos/Repos/ContraPunctor/dsq_tracks-kdf_c14_mono.json"
+        
+        // spectrogram.saveToFile(path: path)
+        
+        print("Saving matrix")
+        saveMatrix(matrix: spectrogram, path: path)
+        print("Reloading Matrix")
+        let reloadedMatrix: Matrix<Float> = readMatrixFromConfig(path: path)
+        
+        XCTAssertEqual(reloadedMatrix, spectrogram)
+        // Remove temp file
     }
 }

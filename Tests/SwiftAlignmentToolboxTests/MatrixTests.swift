@@ -90,6 +90,7 @@ final class MatrixTests: XCTestCase {
     func testMatrixSavingFromConfig() {
         // This test can last a while...
         // The point is to see if it can save large matrices (the old method cannot do this)
+        
         let matrix: Matrix<Float> = Matrix<Float>.randomNormal(rows:10000, columns:7000)
         let path: String = "/tmp/swift_testMatrixSavingFromConfig.json"
         
