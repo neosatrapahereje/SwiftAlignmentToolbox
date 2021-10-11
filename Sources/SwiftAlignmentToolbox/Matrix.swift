@@ -115,7 +115,7 @@ func saveMatrixGridToBin(matrix: Matrix<Float>, url: URL) {
         }
 }
 
-func readMatrixFromConfig<T>(path: String) -> Matrix<T> {
+public func readMatrixFromConfig<T>(path: String) -> Matrix<T> {
     let bdata = NSData(contentsOfFile: path)! as Data
     let decoder = JSONDecoder()
     let decoded = try? decoder.decode(MatrixConfig.self, from: bdata)
