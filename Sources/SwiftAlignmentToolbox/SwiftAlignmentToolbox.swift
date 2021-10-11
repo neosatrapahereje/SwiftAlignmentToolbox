@@ -8,8 +8,8 @@ public enum SampleData {
 
 public struct OnlineAlignment {
     
-    let follower: OnlineTimeWarping
-    let processor: Processor
+    public let follower: OnlineTimeWarping
+    public let processor: Processor
     
     public init(follower: OnlineTimeWarping, processor: Processor) {
         self.follower = follower

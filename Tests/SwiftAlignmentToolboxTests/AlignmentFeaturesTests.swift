@@ -38,7 +38,7 @@ final class AlignmentFeaturesTest: XCTestCase {
         }
     }
     
-    /*
+
     func testLinearSpectrogramAlignmentKDF14() {
         // let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(url: SampleData.audioExampleMonoURL!)
         let kdfpath: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/DSQ_tracks/kdf_c14_mono.wav"
@@ -64,5 +64,5 @@ final class AlignmentFeaturesTest: XCTestCase {
         XCTAssertEqual(reloadedMatrix, spectrogram)
         // Remove temp file
     }
-     */
+
 }
