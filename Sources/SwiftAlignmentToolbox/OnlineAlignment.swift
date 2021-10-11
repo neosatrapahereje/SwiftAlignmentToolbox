@@ -17,6 +17,9 @@ public class OnlineTimeWarping{
     public let referenceFeatures: Matrix<Float>
     public var currentPosition: Int = 0
     public var globalCostMatrix: Matrix<Float>
+    public var globalCostMatrix0: Array<Float>
+    public var globalCostMatrix1: Array<Float>
+    let infCost: Array<Float>
     public let stepSize: Int
     public let windowSize: Int
     public var inputIndex: Int = 0
@@ -42,6 +45,10 @@ public class OnlineTimeWarping{
         self.globalCostMatrix = Matrix<Float>(rows: self.nRef + 1,
                                               columns: 2,
                                               repeatedValue: Float.infinity)
+        self.infCost = Array<Float>(repeating: Float.infinity,
+                                    count: self.nRef + 1)
+        self.globalCostMatrix0 = self.infCost
+        self.globalCostMatrix1 = self.infCost
         self.stepSize = stepSize
         self.windowSize = windowSize
         self.currentPosition = 0
@@ -78,8 +85,10 @@ public class OnlineTimeWarping{
             // Special case: cell (0, 0)
             if scoreIndex == 0 && self.inputIndex == 0 {
                 // self.globalCostMatrix[1, 1] = windowCost.reduce(0, +)
-                self.globalCostMatrix[1, 1] = Surge.sum(windowCost)
-                minCost = self.globalCostMatrix[1, 1]
+                // self.globalCostMatrix[1, 1] = Surge.sum(windowCost)
+                self.globalCostMatrix1[1] = Surge.sum(windowCost)
+                // minCost = self.globalCostMatrix[1, 1]
+                minCost = self.globalCostMatrix1[1]
                 minIndex = 0
                 continue
             }
@@ -87,12 +96,17 @@ public class OnlineTimeWarping{
             let localDist: Float = windowCost[idx]
             
             // update global costs
+            /*
             let dist1: Float = self.globalCostMatrix[scoreIndex, 1] + localDist
             let dist2: Float = self.globalCostMatrix[scoreIndex + 1, 0] + localDist
             let dist3: Float = self.globalCostMatrix[scoreIndex, 0] + localDist
-            
+            */
+            let dist1: Float = self.globalCostMatrix1[scoreIndex] + localDist
+            let dist2: Float = self.globalCostMatrix0[scoreIndex + 1] + localDist
+            let dist3: Float = self.globalCostMatrix0[scoreIndex] + localDist
             let minDist: Float = min(dist1, dist2, dist3)
-            self.globalCostMatrix[scoreIndex + 1, 1] = minDist
+            // self.globalCostMatrix[scoreIndex + 1, 1] = minDist
+            self.globalCostMatrix1[scoreIndex + 1] = minDist
             
             // Normalize cost (as proposed by Arzt et al.)
             let normCost = minDist / Float(self.inputIndex + scoreIndex + 1)
@@ -105,8 +119,10 @@ public class OnlineTimeWarping{
         }
         
         // Is there a better way to do this?
-        self.globalCostMatrix[column: 0] = self.globalCostMatrix[column: 1]
-        self.globalCostMatrix[column: 1] *= (1e-6 + Float.infinity)
+        // self.globalCostMatrix[column: 0] = self.globalCostMatrix[column: 1]
+        // self.globalCostMatrix[column: 1] *= (1e-6 + Float.infinity)
+        self.globalCostMatrix0 = self.globalCostMatrix1
+        self.globalCostMatrix1 = self.infCost
         /*
         for i in Array(0..<self.nRef){
             self.globalCostMatrix[i, 0] = self.globalCostMatrix[i, 1]

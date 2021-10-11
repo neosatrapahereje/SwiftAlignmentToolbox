@@ -227,7 +227,7 @@
         
         /*
         func testOnlineTimeWarping2() {
-            let refPath: String = "/Users/carlos/Repos/ContraPunctor/dsq_tracks-kdf_c14_mono.json"
+            let refPath: String = "/Users/carlos/Downloads/dsq_tracks-kdf_c14_mono.json"
             
             let referenceFeatures: Matrix<Float> = readMatrixFromConfig(path: refPath)
             print(referenceFeatures.rows)
@@ -235,14 +235,15 @@
             let oltw = OnlineTimeWarping(
                 referenceFeatures: referenceFeatures,
                 stepSize: 5,
-                windowSize: 50,
+                windowSize: 100,
                 localDistance: "L1"
             )
             
-            for i in 0..<10 {
+            for i in 0..<referenceFeatures.rows {
                 oltw.step(inputFeatures: referenceFeatures[row: i])
             }
-            print(oltw.warpingPath)
+            // print(oltw.warpingPath)
         }
          */
+         
     }
