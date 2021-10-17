@@ -4,10 +4,6 @@
     
     final class AlignmentToolsTest: XCTestCase {
         func testOnlineTimeWarping() {
-            // let refPath: String = "/Users/carlos/Repos/ContraPunctor/dsq_tracks-kdf_c14_mono.json"
-            
-            // let referenceFeatures: Matrix<Float> = readMatrixFromConfig(path: refPath)
-            
             let refFeaturesArray: [[Float]] = [[-0.85260,0.23982,-0.61662,1.03782,0.06284,-1.09442,-0.12357,0.26589,0.68723,1.16974,0.16757,-0.86332,1.40230,0.68767,0.44396,0.45867,0.22460],
                                                [0.38880,0.01736,1.44882,-1.02222,0.18234,1.47234,-0.08545,0.28027,-1.33161,-0.06505,2.86091,-0.10254,-0.05537,1.09145,2.01307,1.22607,2.88761],
                                                [-0.34847,-0.79857,0.80065,1.93760,-0.68605,-0.62963,0.85939,0.66788,1.12361,-0.97960,1.48400,0.16525,1.23686,-1.27434,1.64633,-0.27049,0.05658],

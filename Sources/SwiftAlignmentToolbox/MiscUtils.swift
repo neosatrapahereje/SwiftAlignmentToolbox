@@ -7,6 +7,7 @@
 
 import Foundation
 import Surge
+import Accelerate
 
 func writeToFile(data: Data, url: URL , compress: Bool=true){
     // Adapted from https://stackoverflow.com/a/57268481    
@@ -85,4 +86,35 @@ func decompressData(compressedData: Data) throws -> Data? {
 public func savedMatrixSizeMB(rows: Int, columns: Int) -> Float {
     let fileSize: Float = Float(rows * columns * 32) * 0.000000125
     return fileSize
+}
+
+
+public func csvToMatrix(url: URL, delimiter: Substring.Element = ",") -> Matrix<Float>? {
+    var matrix: Matrix<Float>? = nil
+    let columns: Int
+    let rows: Int
+    do {
+        let file = try String(contentsOf: url)
+        let lines: Array<Substring> = file.split(separator: "\n")
+        rows = lines.count
+        columns = lines[0].split(separator: delimiter).count
+        matrix = Matrix(rows: rows,
+                        columns: columns,
+                        repeatedValue: Float(0))
+        for (i, line) in lines.enumerated() {
+            for (j, cl) in line.split(separator: delimiter).enumerated() {
+                matrix![i, j] = Float(cl)!
+            }
+        }
+        
+    } catch {
+        print(error)
+    }
+    return matrix
+}
+
+public func csvToMatrix(path: String, delimiter: Substring.Element = ",") -> Matrix<Float>? {
+    let url: URL = URL(fileURLWithPath: path)
+    let matrix: Matrix<Float>? = csvToMatrix(url: url, delimiter: delimiter)
+    return matrix
 }
