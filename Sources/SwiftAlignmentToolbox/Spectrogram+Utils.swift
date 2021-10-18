@@ -304,3 +304,5 @@ public func spectrogramFreqBins(numFFTBins: Int, sampleRate: Float) -> Array<Flo
     let fftFreqs: Array<Float> = fftFrequencies(windowLength: numFFTBins * 2, sampleRate: sampleRate)
     return Array(fftFreqs[0..<numFFTBins])
 }
+
+

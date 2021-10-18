@@ -40,4 +40,10 @@ final class MathUtilsTests: XCTestCase {
         let normalizedSignalActual = normalize(signal: signal)
         XCTAssertEqual(normalizedSignalActual, normalizedSignalExpected)
     }
+    
+    func testinterpolationSearch() {
+        let A: Array<Float> = [0, 1, 2, 3]
+        let keys: Array<Float> = [0.5, 1.5, 3.3, 9.4, 7.8, 0.3]
+        let ix: Array<Int> = interpolationSearch(A, keys)
+    }
 }

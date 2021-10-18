@@ -142,8 +142,6 @@ public func resampleArray(
     }
 }
 
-
-
 public func linSpace(start: Float, stop: Float, num: Int, endpoint: Bool = true) -> Array<Float>{
     let div: Int
     if endpoint {
@@ -216,4 +214,58 @@ public func vNorm(_ x: [Float]) -> Float {
     return norm
 }
 
+/*
+public class Interpolation1D {
+    func callAsFunction(x: Array<Float>, y: Array<Float>) -> Array<Float> {
+        // Dummy interpolation method
+            return y
+        }
+}
 
+public class LinearInterpolation1D: Interpolation1D {
+    
+}
+*/
+
+public func interpolationSearch(_ array: Array<Float>, _ key: Float) -> Int
+{
+    // Adapted from https://en.wikipedia.org/wiki/Interpolation_search
+    // This method assumes that `array` is sorted
+    var low: Int = 0;
+    var high: Int = array.count - 1
+    // var mid: Int
+    // let fKey = Float(key)
+    var pos: Int = array.count - 1
+
+    if (key <= array[low]) {
+        return low
+    }
+
+    while ((array[high] != array[low]) && (key >= array[low]) && (key <= array[high]))
+    {
+        pos = Int(Float(low) + ((key - array[low]) * Float(high - low) / (array[high] - array[low])))
+        print(pos)
+
+        if (array[pos] < key) {
+            low = pos + 1
+        }
+        else if (key < array[pos]) {
+            high = pos - 1
+        }
+        else {
+            return pos
+        }
+    }
+
+    return pos
+}
+
+public func interpolationSearch(_ array: Array<Float>, _ keys: Array<Float>) -> Array<Int>
+{
+    var indices: Array<Int> = Array(repeating: 0, count: keys.count)
+    
+    for (i, key) in keys.enumerated() {
+        indices[i] = interpolationSearch(array, key)
+    }
+    return indices
+}
