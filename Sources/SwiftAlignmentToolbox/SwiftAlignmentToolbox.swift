@@ -30,49 +30,49 @@ public struct OnlineAlignment {
     // the current time in reference units (e.g., seconds)
     public var currentTime: Float? {
         get {
-            if self.refTimeMap != nil {
-                return self.refTimeMap!(self.currentPosition)
+            if self.indexToTimeMap != nil {
+                return self.indexToTimeMap!(self.currentPosition)
             } else {
                 return nil
             }
         }
         set {
-            if self.invRefTimeMap != nil {
-                self.currentPosition = self.invRefTimeMap!(newValue!)
+            if self.timeToIndexMap != nil {
+                self.currentPosition = self.timeToIndexMap!(newValue!)
             }
         }
     }
     // a function that maps the indices in the reference to
     // time in the reference
-    public let refTimeMap: ((Int) -> Float)?
+    public let indexToTimeMap: ((Int) -> Float)?
     // a function that maps the time in the reference to the
     // index in the reference
-    public let invRefTimeMap: ((Float) -> Int)?
+    public let timeToIndexMap: ((Float) -> Int)?
     
     public init(
         follower: OnlineTimeWarping,
         processor: Processor,
-        refTimeMap: ((Int) -> Float)? = nil,
-        invRefTimeMap: ((Float) -> Int)? = nil
+        indexToTimeMap: ((Int) -> Float)? = nil,
+        timeToIndexMap: ((Float) -> Int)? = nil
     )
     {
         self.follower = follower
         self.processor = processor
-        self.refTimeMap = refTimeMap
-        self.invRefTimeMap = invRefTimeMap
+        self.indexToTimeMap = indexToTimeMap
+        self.timeToIndexMap = timeToIndexMap
     }
     
     public init(
         follower: OnlineTimeWarping,
         processor: Processor,
-        refTimeMap: IndexToTimeMap,
-        invRefTimeMap: TimeToIndexMap
+        indexToTimeMap: IndexToTimeMap,
+        timeToIndexMap: TimeToIndexMap
     )
     {
         self.follower = follower
         self.processor = processor
-        self.refTimeMap = refTimeMap.callAsFunction
-        self.invRefTimeMap = invRefTimeMap.callAsFunction
+        self.indexToTimeMap = indexToTimeMap.callAsFunction
+        self.timeToIndexMap = timeToIndexMap.callAsFunction
     }
     
     public mutating func callAsFunction(frame: [Float]) {

@@ -59,6 +59,17 @@ public class TimeToIndexMap {
     }
 }
 
+// This is probably too overengineered... ;)
+public class IndexToTimeMapWraper: IndexToTimeMap {
+    let map: (Int) -> Float
+    public init(map: @escaping (Int) -> Float) {
+        self.map = map
+    }
+    public override func callAsFunction(_ index: Int) -> Float {
+        return self.map(index)
+    }
+}
+
 public class ConstantIndexToTimeMap: IndexToTimeMap {
     let scaleFactor: Float
     

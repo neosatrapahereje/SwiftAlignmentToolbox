@@ -66,8 +66,8 @@ final class AlignmentUtilsTests: XCTestCase {
         var scoreFollower = OnlineAlignment(
             follower: oltw,
             processor: processor,
-            refTimeMap: ix2refMap,
-            invRefTimeMap: ref2ixMap
+            indexToTimeMap: ix2refMap,
+            timeToIndexMap: ref2ixMap
         )
         
         for i in 0..<madmomFramedSignal.rows {
