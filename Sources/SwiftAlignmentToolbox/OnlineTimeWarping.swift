@@ -24,7 +24,8 @@ public class OnlineTimeWarping{
     public let windowSize: Int
     public var inputIndex: Int = 0
     public let nRef: Int
-    public var warpingPath: [[Int]]
+    // speed up by not storing the warping path
+    // public var warpingPath: [[Int]]
     public let localDistance : ([Float], [Float]) -> Float
     public var windowCost: [Float]
     
@@ -52,7 +53,7 @@ public class OnlineTimeWarping{
         self.stepSize = stepSize
         self.windowSize = windowSize
         self.currentPosition = 0
-        self.warpingPath = []
+        // self.warpingPath = []
         
         if localDistance == "L1" {
             self.localDistance = l1Distance
@@ -69,7 +70,7 @@ public class OnlineTimeWarping{
             count: 2 * self.windowSize)
     }
     
-    public func step(inputFeatures: [Float]){
+    public func callAsFunction(inputFeatures: [Float]){
         // Get current window
         let (lower, upper) = self.selectWindow(currentPosition: self.currentPosition)
         
@@ -117,7 +118,7 @@ public class OnlineTimeWarping{
                                    self.currentPosition + self.stepSize)
         
         // Update warping path
-        self.warpingPath.append([self.inputIndex, self.currentPosition])
+        // self.warpingPath.append([self.inputIndex, self.currentPosition])
         
         // Update input index
         self.inputIndex += 1

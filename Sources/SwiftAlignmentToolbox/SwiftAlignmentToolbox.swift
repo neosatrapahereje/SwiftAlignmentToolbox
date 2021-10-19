@@ -10,6 +10,8 @@ public enum SampleData {
     static public let pythonWarpingPathExample = Bundle.module.url(forResource: "oltw_path", withExtension: "txt")
 }
 
+
+
 public struct OnlineAlignment {
     
     // Online Alignment Method
@@ -62,7 +64,7 @@ public struct OnlineAlignment {
     
     public mutating func step(frame: [Float]) {
         let inputFeatures: [Float] = self.processor.process(frame: frame)
-        self.follower.step(inputFeatures: inputFeatures)
+        self.follower(inputFeatures: inputFeatures)
     }
     
     public mutating func reset(currentPosition: Int) {

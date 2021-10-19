@@ -47,13 +47,6 @@ func computeMagnitudeSpectrogram(
             }
 }
 
-public class Processor {
-
-    public func process(frame: Array<Float>) -> Array<Float> {
-        // identity function
-        return frame
-    }
-}
 
 public class SpectrogramProcessor: Processor {
     

@@ -25,10 +25,12 @@
                 localDistance: "L1"
             )
             
+            var warpingPath: [[Int]] = []
             for i in 0..<referenceFeatures.rows {
-                oltw.step(inputFeatures: referenceFeatures[row: i])
+                oltw(inputFeatures: referenceFeatures[row: i])
+                warpingPath.append([i, oltw.currentPosition])
             }
-            XCTAssertEqual(pythonWarpingPath, oltw.warpingPath)
+            XCTAssertEqual(pythonWarpingPath, warpingPath)
         }
         
         /*
