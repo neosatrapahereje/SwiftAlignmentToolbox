@@ -15,11 +15,21 @@ public struct OnlineAlignment {
     public let follower: OnlineTimeWarping
     public let processor: Processor
     public var currentPosition: Int
+    public var currentTime: Float? = nil
+    // a function that maps the indices in the reference to
+    // time in the reference
+    public let refTimeMap: ((Int) -> Float)?
     
-    public init(follower: OnlineTimeWarping, processor: Processor) {
+    public init(
+        follower: OnlineTimeWarping,
+        processor: Processor,
+        refTimeMap: ((Int) -> Float)? = nil
+    )
+    {
         self.follower = follower
         self.processor = processor
         self.currentPosition = self.follower.currentPosition
+        self.refTimeMap = refTimeMap
     }
     
     public mutating func step(frame: [Float]) {
