@@ -62,11 +62,24 @@ public struct OnlineAlignment {
         self.invRefTimeMap = invRefTimeMap
     }
     
-    public mutating func step(frame: [Float]) {
+    public init(
+        follower: OnlineTimeWarping,
+        processor: Processor,
+        refTimeMap: IndexToTimeMap,
+        invRefTimeMap: TimeToIndexMap
+    )
+    {
+        self.follower = follower
+        self.processor = processor
+        self.refTimeMap = refTimeMap.callAsFunction
+        self.invRefTimeMap = invRefTimeMap.callAsFunction
+    }
+    
+    public mutating func callAsFunction(frame: [Float]) {
         let inputFeatures: [Float] = self.processor.process(frame: frame)
         self.follower(inputFeatures: inputFeatures)
     }
-    
+
     public mutating func reset(currentPosition: Int) {
         self.currentPosition = currentPosition
         // TODO: Reset cost matrix?
