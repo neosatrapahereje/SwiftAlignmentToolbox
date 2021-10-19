@@ -7,6 +7,7 @@ public enum SampleData {
     static public let numpySignalExample = Bundle.module.url(forResource: "signal", withExtension: "txt")
     static public let numpyFramedSignalExample = Bundle.module.url(forResource: "framed_signal", withExtension: "txt")
     static public let numpySpectrogramExample = Bundle.module.url(forResource: "spectrogram", withExtension: "txt")
+    static public let pythonWarpingPathExample = Bundle.module.url(forResource: "oltw_path", withExtension: "txt")
 }
 
 public struct OnlineAlignment {

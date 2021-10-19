@@ -39,5 +39,9 @@ final class OsUtilsTest : XCTestCase {
             XCTAssertEqual(true, false)
         }
     }
+    
+    func testSecureInput() {
+        secureInput(forType: Float.self)
+    }
 }
 

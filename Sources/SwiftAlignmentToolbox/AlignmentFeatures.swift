@@ -11,20 +11,26 @@ import Surge
 func linearSpectrogramAlignmentFeatures(
     signal: Signal,
     frameSize: Int = FRAME_SIZE,
-    hopSize: Int = HOP_SIZE
+    hopSize: Int = HOP_SIZE,
+    window: String = "hanning",
+    includeNyquist: Bool = false
 ) -> Matrix<Float> {
     let framedSignal = FramedSignal(
         signal: signal,
         frameSize: frameSize,
         hopSize: hopSize)
-    let spectrogram = Spectrogram(framedSignal: framedSignal)
+    let spectrogram = Spectrogram(framedSignal: framedSignal,
+                                  includeNyquist: includeNyquist,
+                                  window: window)
     return spectrogram.spectrogram
 }
 
 func linearSpectrogramAlignmentFeatures(
     url: URL,
     frameSize: Int = FRAME_SIZE,
-    hopSize: Int = HOP_SIZE
+    hopSize: Int = HOP_SIZE,
+    window: String = "hanning",
+    includeNyquist: Bool = false
 ) -> Matrix<Float>  {
     let audio: Matrix<Float>
     let sampleRate: Double
@@ -36,7 +42,9 @@ func linearSpectrogramAlignmentFeatures(
     let spectrogram = linearSpectrogramAlignmentFeatures(
         signal: signal,
         frameSize: frameSize,
-        hopSize: hopSize
+        hopSize: hopSize,
+        window: window,
+        includeNyquist: includeNyquist
     )
     return spectrogram
 }

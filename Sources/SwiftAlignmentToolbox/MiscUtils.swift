@@ -118,3 +118,6 @@ public func csvToMatrix(path: String, delimiter: Substring.Element = ",") -> Mat
     let matrix: Matrix<Float>? = csvToMatrix(url: url, delimiter: delimiter)
     return matrix
 }
+
+// from https://stackoverflow.com/questions/69622312/how-can-i-get-type-of-variable-in-function-using-template
+func secureInput<T>(forType type: T.Type) { print(type) }

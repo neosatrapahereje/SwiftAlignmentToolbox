@@ -41,16 +41,18 @@ final class AlignmentFeaturesTest: XCTestCase {
         // let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(url: SampleData.audioExampleMonoURL!)
         let kdfpath: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/DSQ_tracks/kdf_mix_mono.wav"
         
+        let frameSize = 4096
+        let hopSize = Int(44100 * 0.05)
         print("Computing spectrogram")
         let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(
             path: kdfpath,
-            frameSize: 4096,
-            hopSize: 441
+            frameSize: frameSize,
+            hopSize: hopSize
         )
         print(spectrogram.rows)
         print(spectrogram.columns)
         
-        let path: String = "/Users/carlos/Downloads/ContraPunctor/kdf_mix_mono_hsz_441_fsz_4096.json"
+        let path: String = "/Users/carlos/Downloads/ContraPunctor/kdf_mix_mono_linearSpectrogram_hsz_\(hopSize)_fsz_\(frameSize).json"
         print("Saving matrix")
         saveMatrix(matrix: spectrogram, path: path)
         print("Reloading Matrix")
@@ -59,6 +61,5 @@ final class AlignmentFeaturesTest: XCTestCase {
         XCTAssertEqual(reloadedMatrix, spectrogram)
     }
      */
-
 
 }

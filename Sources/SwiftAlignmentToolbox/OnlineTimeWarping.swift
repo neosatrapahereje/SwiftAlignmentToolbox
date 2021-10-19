@@ -76,7 +76,7 @@ public class OnlineTimeWarping{
         // initial minimum cost to compare
         var minCost: Float = Float.infinity
     
-        var minIndex: Int = 0
+        var minIndex: Int = max(self.currentPosition - self.stepSize, 0)
         
         self.vdist(start: lower, end: upper, inputFeatures: inputFeatures)
     
@@ -84,13 +84,13 @@ public class OnlineTimeWarping{
             
             // Special case: cell (0, 0)
             if scoreIndex == 0 && self.inputIndex == 0 {
-                self.globalCostMatrix1[1] = Surge.sum(windowCost)
+                self.globalCostMatrix1[1] = Surge.sum(self.windowCost)
                 minCost = self.globalCostMatrix1[1]
                 minIndex = 0
                 continue
             }
             // get the previously computed local cost
-            let localDist: Float = windowCost[idx]
+            let localDist: Float = self.windowCost[idx]
             
             // update global costs
             let dist1: Float = self.globalCostMatrix1[scoreIndex] + localDist
