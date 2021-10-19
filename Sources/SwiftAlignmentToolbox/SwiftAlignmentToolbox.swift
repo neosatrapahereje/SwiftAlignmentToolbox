@@ -12,34 +12,60 @@ public enum SampleData {
 
 public struct OnlineAlignment {
     
+    // Online Alignment Method
     public let follower: OnlineTimeWarping
+    // Processor for preprocessing the features
     public let processor: Processor
-    public var currentPosition: Int
-    public var currentTime: Float? = nil
+    // the current index in the reference
+    public var currentPosition: Int {
+        get {
+            return self.follower.currentPosition
+        }
+        set {
+            self.follower.currentPosition = newValue
+        }
+    }
+    // the current time in reference units (e.g., seconds)
+    public var currentTime: Float? {
+        get {
+            if self.refTimeMap != nil {
+                return self.refTimeMap!(self.currentPosition)
+            } else {
+                return nil
+            }
+        }
+        set {
+            if self.invRefTimeMap != nil {
+                self.currentPosition = self.invRefTimeMap!(newValue!)
+            }
+        }
+    }
     // a function that maps the indices in the reference to
     // time in the reference
     public let refTimeMap: ((Int) -> Float)?
+    // a function that maps the time in the reference to the
+    // index in the reference
+    public let invRefTimeMap: ((Float) -> Int)?
     
     public init(
         follower: OnlineTimeWarping,
         processor: Processor,
-        refTimeMap: ((Int) -> Float)? = nil
+        refTimeMap: ((Int) -> Float)? = nil,
+        invRefTimeMap: ((Float) -> Int)? = nil
     )
     {
         self.follower = follower
         self.processor = processor
-        self.currentPosition = self.follower.currentPosition
         self.refTimeMap = refTimeMap
+        self.invRefTimeMap = invRefTimeMap
     }
     
     public mutating func step(frame: [Float]) {
         let inputFeatures: [Float] = self.processor.process(frame: frame)
         self.follower.step(inputFeatures: inputFeatures)
-        self.currentPosition = self.follower.currentPosition
     }
     
     public mutating func reset(currentPosition: Int) {
-        self.follower.currentPosition = currentPosition
         self.currentPosition = currentPosition
         // TODO: Reset cost matrix?
     }

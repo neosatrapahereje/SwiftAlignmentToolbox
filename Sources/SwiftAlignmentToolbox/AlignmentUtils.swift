@@ -8,6 +8,7 @@
 import Foundation
 
 public struct OnsetTracker {
+    // Track the unique (onset) positions in performed time units (e.g., seconds)
     public let uniqueOnsets: [Float]
     public var currentIdx: Int = 0
     public var performedOnsets: [Float] = []
@@ -26,11 +27,12 @@ public struct OnsetTracker {
     }
     
     public init(uniqueOnsets: [Float]) {
+        // TODO: ensure that the list of onsets is unique?
         self.uniqueOnsets = uniqueOnsets.sorted()
         self.maxIdx = uniqueOnsets.count - 1
     }
     
-    mutating func callAsFunction(_ refTime: Float) -> Float? {
+    public mutating func callAsFunction(_ refTime: Float) -> Float? {
         var scoreOnset: Float? = nil
         if refTime >= self.currentOnset {
             if !self.performedOnsets.contains(self.currentOnset) {
@@ -40,5 +42,54 @@ public struct OnsetTracker {
             }
         }
         return scoreOnset
+    }
+}
+
+public class IndexToTimeMap {
+    // Base class for RefTimeMaps
+    public func callAsFunction(_ index: Int) -> Float {
+        return Float(index)
+    }
+}
+
+public class TimeToIndexMap {
+    // Base class for InvRefTimeMaps
+    public func callAsFunction(_ time: Float) -> Int {
+        return Int(time)
+    }
+}
+
+public class ConstantIndexToTimeMap: IndexToTimeMap {
+    let scaleFactor: Float
+    
+    public init(scaleFactor: Float) {
+        self.scaleFactor = scaleFactor
+    }
+    
+    public override func callAsFunction(_ index: Int) -> Float {
+        let refTime: Float = Float(index) * self.scaleFactor
+        return refTime
+    }
+}
+
+public class ConstantTimeToIndexMap: TimeToIndexMap {
+    let scaleFactor: Float
+    let maxIndex: Int
+    let minIndex: Int
+    
+    public init(scaleFactor: Float, minIndex: Int = 0, maxIndex: Int) {
+        self.scaleFactor = scaleFactor
+        self.minIndex = minIndex
+        self.maxIndex = maxIndex
+    }
+    
+    public override func callAsFunction(_ time: Float) -> Int {
+        let index: Int = Int(round(time * self.scaleFactor))
+        if index < 0 {
+            return 0
+        } else if index > maxIndex {
+            return maxIndex
+        }
+        return index
     }
 }
