@@ -138,7 +138,7 @@ public func readMatrixFromConfig<T>(path: String) -> Matrix<T> {
 
 extension Array where Element == Float {
     
-    func median() -> Float? {
+    public func median() -> Float? {
         guard count > 0  else { return nil }
         let sortedArray = self.sorted()
         if count % 2 != 0 {
@@ -148,7 +148,7 @@ extension Array where Element == Float {
         }
     }
     
-    func argmin() -> (Int?, Float?) {
+    public func argmin() -> (Int?, Float?) {
         guard self.count > 0 else {return (nil, nil)}
         var out: Float = Float.infinity
         var argmin: Int = 0
