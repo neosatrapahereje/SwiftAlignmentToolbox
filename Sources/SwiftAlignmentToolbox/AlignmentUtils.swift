@@ -85,8 +85,8 @@ public class ConstantIndexToTimeMap: IndexToTimeMap {
 
 public class ConstantTimeToIndexMap: TimeToIndexMap {
     let scaleFactor: Float
-    let maxIndex: Int
-    let minIndex: Int
+    var maxIndex: Int
+    var minIndex: Int
     
     public init(scaleFactor: Float, minIndex: Int = 0, maxIndex: Int) {
         self.scaleFactor = scaleFactor
@@ -96,10 +96,10 @@ public class ConstantTimeToIndexMap: TimeToIndexMap {
     
     public override func callAsFunction(_ time: Float) -> Int {
         let index: Int = Int(round(time * self.scaleFactor))
-        if index < 0 {
-            return 0
+        if index < self.minIndex {
+            return self.minIndex
         } else if index > maxIndex {
-            return maxIndex
+            return self.maxIndex
         }
         return index
     }

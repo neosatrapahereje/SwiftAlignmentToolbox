@@ -135,3 +135,29 @@ public func readMatrixFromConfig<T>(path: String) -> Matrix<T> {
                                       grid: grid)
     return matrix
 }
+
+extension Array where Element == Float {
+    
+    func median() -> Float? {
+        guard count > 0  else { return nil }
+        let sortedArray = self.sorted()
+        if count % 2 != 0 {
+            return Float(sortedArray[count/2])
+        } else {
+            return Float(sortedArray[count/2] + sortedArray[count/2 - 1]) / 2.0
+        }
+    }
+    
+    func argmin() -> (Int?, Float?) {
+        guard self.count > 0 else {return (nil, nil)}
+        var out: Float = Float.infinity
+        var argmin: Int = 0
+        for i in 0..<self.count {
+            if self[i] < out {
+                out = self[i]
+                argmin = i
+            }
+        }
+        return (argmin, out)
+    }
+}

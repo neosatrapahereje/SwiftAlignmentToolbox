@@ -8,6 +8,9 @@ public enum SampleData {
     static public let numpyFramedSignalExample = Bundle.module.url(forResource: "framed_signal", withExtension: "txt")
     static public let numpySpectrogramExample = Bundle.module.url(forResource: "spectrogram", withExtension: "txt")
     static public let pythonWarpingPathExample = Bundle.module.url(forResource: "oltw_path", withExtension: "txt")
+    static public let pythonDTWPathExample = Bundle.module.url(forResource: "dtw_path", withExtension: "txt")
+    static public let pythonDTWXExample = Bundle.module.url(forResource: "dtw_X", withExtension: "txt")
+    static public let pythonDTWYExample = Bundle.module.url(forResource: "dtw_Y", withExtension: "txt")
 }
 
 
