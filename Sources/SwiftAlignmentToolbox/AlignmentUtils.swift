@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Accelerate
+import Surge
 
 public struct OnsetTracker {
     // Track the unique (onset) positions in performed time units (e.g., seconds)
@@ -102,5 +104,53 @@ public class ConstantTimeToIndexMap: TimeToIndexMap {
             return self.maxIndex
         }
         return index
+    }
+}
+
+public class LinearInterpolationIndexToTimeMap: IndexToTimeMap {
+    
+    let interpfunc: LinearInterpolation
+    
+    public init(refIndices: [Int], indexTimes: [Float]) {
+        
+        self.interpfunc = LinearInterpolation(
+            x: refIndices.map { Float($0)},
+            y: indexTimes
+        )
+    }
+    public override func callAsFunction(_ index: Int) -> Float {
+        let time: Float = self.interpfunc(Float(index))
+        return time
+    }
+}
+
+public class LinearInterpolationTimeToIndexMap: TimeToIndexMap {
+    var maxIndex: Int
+    var minIndex: Int
+    var maxTime: Float
+    var minTime: Float
+    let interpfunc: LinearInterpolation
+    public init(indexTimes: [Float], refIndices: [Int]) {
+            
+        self.maxIndex = refIndices.max()!
+        self.minIndex = refIndices.min()!
+        self.maxTime = indexTimes.max()!
+        self.minTime = indexTimes.min()!
+        
+        self.interpfunc = LinearInterpolation(
+            x: indexTimes,
+            y: refIndices.map { Float($0) }
+        )
+    }
+    
+    public override func callAsFunction(_ time: Float) -> Int {
+        if time >= self.maxTime {
+            return self.maxIndex
+        } else if time <= self.minTime {
+            return self.minIndex
+        } else {
+            let idx: Int = Int(round(self.interpfunc(time)))
+            return idx
+        }
     }
 }

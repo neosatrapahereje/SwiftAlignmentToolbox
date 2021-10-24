@@ -209,23 +209,10 @@ public func EuclideanDistance(_ x: [Float], _ y: [Float]) -> Float {
 public func vNorm(_ x: [Float]) -> Float {
     // Norm of a vector
     // Probably this method exists somewhere else...
-    // var norm : Float = 0
     let norm = sqrt(vDSP.dot(x, x))
     return norm
 }
 
-/*
-public class Interpolation1D {
-    func callAsFunction(x: Array<Float>, y: Array<Float>) -> Array<Float> {
-        // Dummy interpolation method
-            return y
-        }
-}
-
-public class LinearInterpolation1D: Interpolation1D {
-    
-}
-*/
 
 public func interpolationSearch(_ array: Array<Float>, _ key: Float) -> Int
 {
@@ -268,4 +255,54 @@ public func interpolationSearch(_ array: Array<Float>, _ keys: Array<Float>) -> 
         indices[i] = interpolationSearch(array, key)
     }
     return indices
+}
+
+public class LinearInterpolation {
+    // Adapted from https://stackoverflow.com/a/53213532
+    private var n : Int
+    private var x : [Float]
+    private var y : [Float]
+    public init (x: [Float], y: [Float], assumeSorted: Bool = false) {
+        assert(x.count == y.count)
+         
+        self.n = x.count-1
+        
+        if assumeSorted{
+            // Assumes elements are sorted
+            self.x = x
+            self.y = y
+        } else {
+            let uniqueX: [Float] = Array<Float>(x.uniqued())
+            let sortIdxs = argsort(uniqueX)
+            self.x = uniqueX.sorted()
+            self.y = [Float](repeating: 0, count: self.x.count)
+            for (i, ui) in sortIdxs.enumerated() {
+                self.y[i] = y[ui]
+            }
+        }
+    }
+    
+    public func callAsFunction(_ t: Float) -> Float {
+        if t <= x[0] { return y[0] }
+        for i in 1...n {
+            if t <= x[i] {
+                let ans = (t-x[i-1]) * (y[i] - y[i-1]) / (x[i]-x[i-1]) + y[i-1]
+                return ans
+            }
+        }
+        return y[n]
+    }
+    public func callAsFunction(_ t: [Float]) -> [Float] {
+        let result: [Float] = t.map { self($0) }
+        return result
+    }
+}
+
+public func argsort<T>(_ l:[T]) -> [Int] where T: Comparable {
+    // Adapted from https://codegolf.stackexchange.com/a/136655
+    var sortIndices = [Int](repeating: 0, count: l.count)
+    for (i, k) in (l.sorted()).enumerated(){
+        sortIndices[i] = l.firstIndex(of: k)!
+    }
+    return sortIndices
 }

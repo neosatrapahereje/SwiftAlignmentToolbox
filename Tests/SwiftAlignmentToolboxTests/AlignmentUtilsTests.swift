@@ -9,6 +9,7 @@ import Foundation
 import XCTest
 @testable import SwiftAlignmentToolbox
 import Surge
+import Accelerate
 
 final class AlignmentUtilsTests: XCTestCase {
     func testOnsetTracker() {
@@ -76,6 +77,30 @@ final class AlignmentUtilsTests: XCTestCase {
             XCTAssertEqual(expectedTimes[i], scoreFollower.currentTime)
             XCTAssertEqual(ref2ixMap(expectedTimes[i]), scoreFollower.currentPosition)
         }
+    }
+    
+    func testLinearInterpolationTimeMaps() {
+        let indices: [Int] =  [0,  2,  3,  6, 10]
+        let times: [Float] = [10.0, 30.0, 50.0, 55.0, 97.4372]
+
+        let newIndices: [Int] = Array(0..<11)
+        
+        let indexToTimeMap = LinearInterpolationIndexToTimeMap(
+            refIndices: indices,
+            indexTimes: times)
+        let timeToIndexMap = LinearInterpolationTimeToIndexMap(
+            indexTimes: times,
+            refIndices: indices
+        )
+        
+        let interpTimes: [Float] = newIndices.map { indexToTimeMap($0) }
+        
+        let interpIndices: [Int] = interpTimes.map { timeToIndexMap($0) }
+        
+        for (ni, ii) in zip(newIndices, interpIndices) {
+            XCTAssertEqual(ni, ii)
+        }
+        
     }
     
 }

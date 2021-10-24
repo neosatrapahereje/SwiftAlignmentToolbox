@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  IntMatrix.swift
 //  
 //
 //  Created by Carlos Eduardo Cancino-Chacón on 22.10.21.
