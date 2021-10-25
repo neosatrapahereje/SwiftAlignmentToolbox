@@ -89,21 +89,30 @@ public func savedMatrixSizeMB(rows: Int, columns: Int) -> Float {
 }
 
 
-public func csvToMatrix(url: URL, delimiter: Substring.Element = ",") -> Matrix<Float>? {
+public func csvToMatrix(url: URL, delimiter: Substring.Element = ",", skipRows: Int? = nil) -> Matrix<Float>? {
     var matrix: Matrix<Float>? = nil
     let columns: Int
     let rows: Int
+    let startRow: Int
     do {
         let file = try String(contentsOf: url)
         let lines: Array<Substring> = file.split(separator: "\n")
-        rows = lines.count
+        if skipRows != nil {
+            assert(skipRows! > 0)
+            rows = lines.count - skipRows!
+            startRow = skipRows!
+        } else {
+            rows = lines.count
+            startRow = 0
+        }
         columns = lines[0].split(separator: delimiter).count
         matrix = Matrix(rows: rows,
                         columns: columns,
                         repeatedValue: Float(0))
-        for (i, line) in lines.enumerated() {
-            for (j, cl) in line.split(separator: delimiter).enumerated() {
-                matrix![i, j] = Float(cl)!
+        
+        for i in startRow..<rows {
+            for (j, cl) in lines[i].split(separator: delimiter).enumerated() {
+                matrix![i - startRow, j] = Float(cl)!
             }
         }
         
@@ -113,9 +122,13 @@ public func csvToMatrix(url: URL, delimiter: Substring.Element = ",") -> Matrix<
     return matrix
 }
 
-public func csvToMatrix(path: String, delimiter: Substring.Element = ",") -> Matrix<Float>? {
+public func csvToMatrix(path: String, delimiter: Substring.Element = ",", skipRows: Int? = nil) -> Matrix<Float>? {
     let url: URL = URL(fileURLWithPath: path)
-    let matrix: Matrix<Float>? = csvToMatrix(url: url, delimiter: delimiter)
+    let matrix: Matrix<Float>? = csvToMatrix(
+        url: url,
+        delimiter: delimiter,
+        skipRows: skipRows
+    )
     return matrix
 }
 

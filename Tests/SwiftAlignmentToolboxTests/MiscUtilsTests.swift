@@ -12,7 +12,7 @@ import XCTest
 import Surge
 
 
-final class OsUtilsTest : XCTestCase {
+final class MiscUtilsTest : XCTestCase {
     func testSaveCompressedData() {
         let array : [[Float]] = [[1.1, 3.7] , [2.5, 6.4], [7.8, 8.3]]
         let matrix: Matrix<Float> = Matrix(array)
@@ -40,8 +40,22 @@ final class OsUtilsTest : XCTestCase {
         }
     }
     
+    /*
     func testSecureInput() {
         secureInput(forType: Float.self)
+    }
+     */
+    
+    func testCsvToMatrix() {
+        
+        let url: URL = SampleData.numpySpectrogramExample!
+        let fullMatrix = csvToMatrix(url: url)
+        let skipMatrix = csvToMatrix(url: url, skipRows: 2)
+        
+        XCTAssertEqual(fullMatrix![row: 2], skipMatrix![row: 0])
+        let tMatrix: [[Float]] = Surge.transpose(skipMatrix!).toArray()
+        print(tMatrix)
+        
     }
 }
 
