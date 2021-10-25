@@ -38,11 +38,13 @@ final class AlignmentFeaturesTest: XCTestCase {
     
     /*
     func testLinearSpectrogramAlignmentKDF14() {
-        // let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(url: SampleData.audioExampleMonoURL!)
-        let kdfpath: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/DSQ_tracks/kdf_mix_mono.wav"
+        
+        let samplingRate = 44100
+        let version: String = "ver3"
+        let kdfpath: String = "/Users/carlos/Documents/RITMO/MusicLab2020/ScoreFollowing/data/dsq_rehearsal_2021-10-21/kdf_c14_dsq_\(version)_mono_\(samplingRate).wav"
         
         let frameSize = 4096
-        let hopSize = Int(44100 * 0.05)
+        let hopSize = Int(Float(samplingRate) * 0.05)
         print("Computing spectrogram")
         let spectrogram: Matrix<Float> = linearSpectrogramAlignmentFeatures(
             path: kdfpath,
@@ -52,7 +54,8 @@ final class AlignmentFeaturesTest: XCTestCase {
         print(spectrogram.rows)
         print(spectrogram.columns)
         
-        let path: String = "/Users/carlos/Downloads/ContraPunctor/kdf_mix_mono_linearSpectrogram_hsz_\(hopSize)_fsz_\(frameSize).json"
+        let path: String = "/Users/carlos/Downloads/ContraPunctor/kdf_c14_dsq_\(version)_linearSpectrogram_hsz_\(hopSize)_fsz_\(frameSize)_sr_\(samplingRate).json"
+        
         print("Saving matrix")
         saveMatrix(matrix: spectrogram, path: path)
         print("Reloading Matrix")

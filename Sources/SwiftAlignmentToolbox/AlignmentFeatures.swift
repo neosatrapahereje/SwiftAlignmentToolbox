@@ -35,6 +35,7 @@ func linearSpectrogramAlignmentFeatures(
     let audio: Matrix<Float>
     let sampleRate: Double
     (audio, sampleRate) = loadAudioFile(url: url)
+    print("Sample Rate \(sampleRate)")
     let signal = Signal(
         data: audio,
         sampleRate: Int(sampleRate)
